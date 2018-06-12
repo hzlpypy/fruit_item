@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block css %}
+    <style type="text/css">
+        .move > li {
+            float: left;
+        }
+
+        .clear:after {
+
+            clear: both;
+            content: '';
+            display: block;
+            width: 0;
+            height: 0;
+            visibility: hidden;
+        }
+    </style>
+{% endblock %}
+{% block js %}
+    <script>
+        $(function () {
+            let GOODS_URL = 'http://127.0.0.1:8000/home/add';
+            let IMG_URL = 'http://127.0.0.1:8000/static/';
+            let GOODS_SKIP = 'http://127.0.0.1:8000/home/car?id=';
+            $.get(GOODS_URL, function (result) {
+                if (result.data.length > 0 && result.statu === 200) {
+                    for (let obj of result.data) {
+                        let big_div = $("<div>").attr('class', 'list_model').appendTo($("#parent"));
+                        let two_div = $('<div>').attr('class', 'list_title clear');
+                        two_div.appendTo(big_div);
+                        $('<h3>').attr({'class': 'fff', 'id': obj.judgefruit}).text(obj.title)
+                            .appendTo($('<a>').attr('href','/list'+obj.id).appendTo(two_div));
+                        let three_div = $('<div>').attr('class', 'subtitle fl').appendTo(big_div);
+                        let uls = $('<ul>').attr('class', 'move clear').appendTo(two_div);
+                        for (let obj1 of obj.classify) {
+                            $('<a>').attr('href', obj1.id).text(obj1.infoname).appendTo($('<li>').appendTo(uls))
+                        }
+                        let four_div = $('<div>').attr('class', 'goods_con clear').appendTo(two_div);
+                        $('<img>').attr('src', IMG_URL + obj.banner).appendTo($('<div>').attr('class', 'goods_banner fl').appendTo(four_div));
+                        let ul = $('<ul>').attr('class', 'goods_list fl').appendTo(four_div);
+                        $('<a>').attr({
+                            'href': '#', 'class': 'goods_more ffr',
+                            'id': 'fruit_more'
+                        }).text('查看更多').appendTo($('<li>').appendTo(uls));
+                        for (let obj2 of obj.fruit) {
+                            let li = $('<li>').appendTo(ul);
+                            $('<a>').attr('href', obj2.id).text(obj2.gtitle)
+                                .appendTo($('<h4>').appendTo(li));
+                            $('<img>').attr('src', IMG_URL + obj2.gimg)
+                                .appendTo($('<a>').attr('href', GOODS_SKIP+obj2.id)
+                                    .appendTo(li));
+                            $('<div>').attr('class', 'prize').text(obj2.gprice).appendTo(li)
+                        }
+
+                    }
+
+                }
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block content %}
+        <div class="center_con clearfix">
+            <ul class="subnav fl">
+                <li><a href="#model01" class="fruit">{{ title_info.0.title }}</a></li>
+                <li><a href="#model02" class="seafood">{{ title_info.1.title }}</a></li>
+                <li><a href="#model03" class="meet">{{ title_info.2.title }}</a></li>
+                <li><a href="#model04" class="egg">{{ title_info.3.title }}</a></li>
+                <li><a href="#model05" class="vegetables">{{ title_info.4.title }}</a></li>
+                <li><a href="#model06" class="ice">{{ title_info.5.title }}</a></li>
+            </ul>
+            <div class="slide fl">
+                <ul class="slide_pics">
+                    <li><img src="/static/images/slide.jpg" alt="幻灯片"></li>
+                    <li><img src="/static/images/slide02.jpg" alt="幻灯片"></li>
+                    <li><img src="/static/images/slide03.jpg" alt="幻灯片"></li>
+                    <li><img src="/static/images/slide04.jpg" alt="幻灯片"></li>
+                </ul>
+                <div class="prev"></div>
+                <div class="next"></div>
+                <ul class="points"></ul>
+            </div>
+            <div class="adv fl">
+                <a href="#"><img src="/static/images/adv01.jpg"></a>
+                <a href="#"><img src="/static/images/adv02.jpg"></a>
+            </div>
+        </div>
+        <!--
+                <div class="list_model">
+                    <div class="list_title clearfix">
+                        <h3 class="fl" id="model01">新鲜水果</h3>
+                        <div class="subtitle fl">
+                            <span>|</span>
+                            <a href="#">鲜芒</a>
+                            <a href="#">加州提子</a>
+                            <a href="#">亚马逊牛油果</a>
+                        </div>
+                        <a href="#" class="goods_more fr" id="fruit_more">查看更多 ></a>
+                    </div>
+                    <div class="goods_con clearfix">
+                        <div class="goods_banner fl"><img src="/static/images/banner01.jpg"></div>
+                        <ul class="goods_list fl">
+                            <li>
+                                <h4><a href="#">草莓</a></h4>
+                                <a href="#"><img src="images/goods/goods003.jpg"></a>
+                                <div class="prize">¥ 30.00</div>
+                            </li>
+                            <li>
+                                <h4><a href="#">葡萄</a></h4>
+                                <a href="#"><img src="images/goods/goods002.jpg"></a>
+                                <div class="prize">¥ 5.50</div>
+                            </li>
+                            <li>
+                                <h4><a href="#">柠檬</a></h4>
+                                <a href="#"><img src="images/goods/goods001.jpg"></a>
+                                <div class="prize">¥ 3.90</div>
+                            </li>
+                            <li>
+                                <h4><a href="#">奇异果</a></h4>
+                                <a href="#"><img src="images/goods/goods012.jpg"></a>
+                                <div class="prize">¥ 25.80</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            -->
+
+{% endblock %}
