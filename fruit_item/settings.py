@@ -127,7 +127,7 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
 
 SESSION_ENGINE='django.contrib.sessions.backends.db'
-# SESSION_COOKIE_AGE = 60 * 60 * 24 * 14 # session 的保存时间是两个周
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # session 的保存时间是两个周
 
 ##########  send_email  ######################
 # 这一项是固定的

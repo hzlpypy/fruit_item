@@ -19,10 +19,12 @@ class UserInfo(models.Model):
 
 
 class Joincars(models.Model):
-    aid = models.ForeignKey('UserInfo')
-    goodstype = models.CharField(max_length=100, verbose_name='商品类别')
-    goodsinfo = models.CharField(max_length=100, verbose_name='购物车商品名称')
+    uname = models.CharField(max_length=32,verbose_name='用户名',default='1')
+    goodsinfo = models.CharField(max_length=100, verbose_name='商品名称')
     goodsnum = models.CharField(max_length=32, verbose_name='商品个数')
+    goodsprice = models.CharField(max_length=32,verbose_name='商品单价')
+    gtotalprice = models.CharField(max_length=32,verbose_name='商品总价')
+    gimg = models.CharField(max_length=255,default='1',verbose_name='商品图片')
     createtime = models.DateTimeField(default=timezone.now)
     is_delete = models.CharField(max_length=32,default='1')
 

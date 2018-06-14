@@ -9,6 +9,7 @@
     <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/static/js/slide.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.cookie.js"></script>
     {% block js %}
     {% endblock %}
     {% block css %}
@@ -40,37 +41,49 @@
 </head>
 <body>
 <div id="parent">
-       <div class="header_con">
-            <div class="header">
-                <div class="welcome fl">欢迎来到天天生鲜!</div>
-                <div class="fr">
-                    <div class="login_info fl">
-                        欢迎您：<em>张 山</em>
+    <div class="header_con">
+        <div class="header">
+            <div class="welcome fl">欢迎来到天天生鲜!</div>
+            <div class="fr">
+                <div class="login_info fl">
+                    欢迎您：<em>张 山</em>
+                </div>
+                {% if name %}
+                    <div class="login_btn fl">
+                        <span style="color: red">欢迎您:<a>{{ name }}</a></span>
                     </div>
-                    {% if name %}
-                         <div class="login_btn fl">
-                            <span style="color: red">欢迎您:<a>{{ name }}</a></span>
-                        </div>
-                    {% else %}
-                         <div class="login_btn fl">
-                            <a href="{% url 'login' %}">登录</a>
-                            <span>|</span>
-                            <a href="{% url 'reg' %}">注册</a>
-                        </div>
-                    {% endif %}
+                {% else %}
+                    <div class="login_btn fl">
+                        <a href="{% url 'login' %}">登录</a>
+                        <span>|</span>
+                        <a href="{% url 'reg' %}">注册</a>
+                    </div>
+                {% endif %}
 
-                    <div class="user_link fl">
-                        <span>|</span>
-                        <a href="user_center_info.html">用户中心</a>
-                        <span>|</span>
-                        <a href="cart.html">我的购物车</a>
-                        <span>|</span>
-                        <a href="user_center_order.html">我的订单</a>
-                    </div>
+                <div class="user_link fl">
+                    <span>|</span>
+                    <a href="user_center_info.html">用户中心</a>
+                    <span>|</span>
+                    <a href="cart.html">我的购物车</a>
+                    <span>|</span>
+                    <a href="user_center_order.html">我的订单</a>
                 </div>
             </div>
         </div>
+    </div>
 
+
+    {% if shopcar %}
+        <div class="search_bar clearfix">
+            <a href="index.html" class="logo fl"><img src="/static/images/logo.png"></a>
+            <div class="sub_page_name fl">|&nbsp;&nbsp;&nbsp;&nbsp;购物车</div>
+            <div class="search_con fr">
+                <input type="text" class="input_text fl" name="" placeholder="搜索商品">
+                <input type="button" class="input_btn fr" name="" value="搜索">
+            </div>
+        </div>
+
+    {% else %}
         <div class="search_bar clearfix">
             <a href="index.html" class="logo fl"><img src="/static/images/logo.png"></a>
             <div class="search_con fl">
@@ -78,7 +91,7 @@
                 <input type="button" class="input_btn fr" name="" value="搜索">
             </div>
             <div class="guest_cart fr">
-                <a href="#" class="cart_name fl">我的购物车</a>
+                <a href="{% url 'shopcar' %}" class="cart_name fl">我的购物车</a>
                 <div class="goods_count fl" id="show_count">1</div>
             </div>
         </div>
@@ -94,6 +107,8 @@
                 </ul>
             </div>
         </div>
+    {% endif %}
+
     {% block content %}
     {% endblock %}
 </div>

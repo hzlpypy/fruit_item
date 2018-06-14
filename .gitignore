@@ -1,0 +1,15 @@
+# Created by .ignore support plugin (hsz.mobi)
+.gitignore
+.idea/dataSources.local.xml
+.idea/dataSources.xml
+.idea/dataSources/
+.idea/fruit_item.iml
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
+fruit_item/__pycache__/
+homepage/__pycache__/
+homepage/migrations/__pycache__/
+register/__pycache__/
+register/migrations/__pycache__/
