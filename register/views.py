@@ -3,7 +3,10 @@ from django.shortcuts import render, redirect
 from register.forms import User, LoginForm
 from register.models import UserInfo
 
+li_login = []
 li_sess = []
+
+
 # Create your views here.
 def register(request):
     if request.method == 'POST':
@@ -37,8 +40,10 @@ def register(request):
         f = User()
         return render(request, 'register/register.html', {'form': f})
 
+
 def login(request):
-    if  li_sess:
+    li_login.append('1')
+    if li_sess:
         # return render(request, 'home_page/index.html', {'name': request.session['name']})
         return HttpResponseRedirect('/home/')
     else:
@@ -46,15 +51,15 @@ def login(request):
             f = LoginForm(request.POST)
             if f.is_valid():
                 name = f.cleaned_data['name']
-                if UserInfo.objects.filter(uname=name,upwd=f.cleaned_data['pwd']):
+                if UserInfo.objects.filter(uname=name, upwd=f.cleaned_data['pwd']):
                     request.session['name'] = f.cleaned_data['name']
                     li_sess.append(request.session['name'])
-                    return render(request, 'home_page/index.html', {'name':request.session['name']})
+                    return render(request, 'home_page/index.html', {'name': request.session['name']})
                 else:
-                    return render(request,'register/login.html',{'error':'密码错误','form':f})
+                    return render(request, 'register/login.html', {'error': '密码错误', 'form': f,'li_login':li_login})
             else:
                 a = f._errors
-                return render(request,'register/login.html',{'error':f._errors,'form':f})
+                return render(request, 'register/login.html', {'error': f._errors, 'form': f,'li_login':li_login})
         else:
             f = LoginForm()
-            return render(request, 'register/login.html', {'form': f})
+            return render(request, 'register/login.html', {'form': f,'li_login':li_login})

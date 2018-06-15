@@ -8,5 +8,4 @@ urlpatterns = [
     url('register/',views.register,name='reg'),
     url('login/',views.login,name='login'),
     url('verify/',verifycode.verifycode,name='verify'),
-
 ]

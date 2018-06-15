@@ -25,6 +25,7 @@ class Joincars(models.Model):
     goodsprice = models.CharField(max_length=32,verbose_name='商品单价')
     gtotalprice = models.CharField(max_length=32,verbose_name='商品总价')
     gimg = models.CharField(max_length=255,default='1',verbose_name='商品图片')
+    gcount = models.CharField(max_length=8,verbose_name='商品编码')
     createtime = models.DateTimeField(default=timezone.now)
     is_delete = models.CharField(max_length=32,default='1')
 

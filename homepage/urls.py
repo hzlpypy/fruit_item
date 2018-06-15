@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'add',views.add_goods,name='add_good'),
     url(r'car',views.car,name='car'),
     url(r'shop',views.add_cars,name='addcar'),
-    url(r'kk/', views.shopcar,name='shopcar'),
+    url(r'kk/', views.shopcar,name='shopcar'), # 购物车系统
     url('change/', views.change_count),
+    url(r'pay/',views.pay,name='pay'), # 付款系统
 ]

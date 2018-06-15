@@ -37,7 +37,7 @@
             $('#checkall').click(function () {
                 let state = $(this).prop("checked");
                 $(":checkbox:not(#checkall)").prop('checked', state)
-            })
+            });
             //选择
             $(':checkbox:not(#checkall)').click(function () {
                 if ($(':checked').length + 1 === $(':checkbox').length) {
@@ -45,13 +45,13 @@
                 } else {
                     $('#checkall').prop('checked', false)
                 }
-            })
+            });
             //数量加
             $('.add').click(function () {
                 let txt = $(this).next();
                 txt.val(parseFloat(txt.val()) + 1).blur();
                 total()
-            })
+            });
             // 数量减少
             $('.minus').click(function () {
                 txt = $(this).prev();
@@ -62,14 +62,16 @@
             $('.num_show').blur(function () {
                 count = $(this).val();
                 cart_id = $(this).parents('.cart_list_td').attr('id');
-                let CHANGE_URL = 'http://127.0.0.1:8000/home/change?id=' + cart_id;
+                let CHANGE_URL = 'http://127.0.0.1:8000/home/change?id=' + cart_id + '&'+'count='+count;
                 $.get(CHANGE_URL, function (data) {
                     num = data.res
                 });
+                total();
                 if (count <= 0) {
                     alert('请输入正确的数量');
                     //location.href = '/home/kk/'  //直接刷新页面,显示所有原来数据
                     $(this).val(num);
+
                 } else if (count >= 100) {
                     //location.href = '/home/kk/'
                     alert('数量不能超过100');
@@ -116,7 +118,7 @@
         <li class="col01"><input type="checkbox" name="checkall" checked id="checkall"></li>
         <li class="col02">全选</li>
         <li class="col03">合计(不含运费)：<span>¥</span><em id="total">42.60</em><br>共计<b id="total_count1">{{ i }}</b>件商品</li>
-        <li class="col04"><a href="place_order.html">去结算</a></li>
+        <li class="col04"><a href="{% url 'pay' %}">去结算</a></li>
     </ul>
 
 {% endblock %}

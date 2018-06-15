@@ -9,7 +9,7 @@ from register.views import li_sess
 from .models import Typeinfo, Goodsinfo, Change, Smallinfo
 
 # Create your views here.
-li_shopcar = []
+li_shopcar = {}  # 判断前端头部界面是否为购物车,或者支付界面,或者用户中心界面
 
 
 #########主页面##############
@@ -23,8 +23,10 @@ def index(request):
     if li_sess:
         return render(request, 'home_page/index.html', {'title_info': li, 'name': request.session['name']})
     else:
-        return render(request, 'home_page/index.html', {'title_info': li, 'shopcar': li_shopcar})
+        return render(request, 'home_page/index.html', {'title_info': li})
 
+def search(request):
+    return render(request,'func/search.html')
 
 ######### 传递json数据给主页面进行添加水果操作#################
 def add_goods(request):
@@ -93,8 +95,6 @@ def add_cars(request):
     else:
         return JsonResponse({'res': 0})
 
-    ######## 购物车系统#########
-
 
 #####购物车系统##########
 def shopcar(request):
@@ -103,7 +103,7 @@ def shopcar(request):
         if li_sess:
             name = li_sess[0]
             info = Joincars.objects.filter(uname=name)
-            li_shopcar.append(1)
+            li_shopcar.update(a='购物车')
             i = 0
             if info:
                 for shopcarinfo in info:
@@ -112,17 +112,50 @@ def shopcar(request):
                     li.append(shop_dict)
             return render(request, 'func/shopcar.html', {'shopcar': li_shopcar, 'form': li, 'name': name, 'i': i})
         else:
-            return JsonResponse({'res': 1})
+            # return JsonResponse({'res': 1})
+            return HttpResponseRedirect('/register/login')
     pass
 
 
+######前端点击修改商数量时,购物车数据库数据跟着修改#############
 def change_count(request):
     if request.method == 'GET':
         id = request.GET.get('id')
+        count = request.GET.get('count')
         user = Joincars.objects.filter(id=id)
-        if user:
-            count = model_to_dict(user[0])['goodsnum']
-            return JsonResponse({'res': count})
+        if int(count) > 0 and int(count) < 100:
+            if user:
+                oldcount = model_to_dict(user[0])['goodsnum']
+                oneprice = model_to_dict(user[0])['goodsprice']
+                judge_num = oneprice.split('.')
+                if len(judge_num) > 0:  # 判断是否为浮点型
+                    Joincars.objects.filter(id=id).update(goodsnum=count, gtotalprice=float(oneprice) * int(count))
+                else:
+                    Joincars.objects.filter(id=id).update(goodsnum=count, gtotalprice=int(oneprice) * int(count))
+                return JsonResponse({'res': oldcount})
         else:
             pass
 
+
+#########点击支付界面####################
+def pay(request):
+    if request.method == 'GET':
+        li_shopcar.update(a='提交订单')
+        li = []
+        li_price = 0
+        i = 0
+        reality_price = 00.00
+        if li_sess:
+            name = li_sess[0]
+            user_shop = Joincars.objects.filter(uname=name)
+            for info in user_shop:
+                i += 1
+                dic = model_to_dict(info).get('goodsinfo')
+                Joincars.objects.filter(uname=name, goodsinfo=dic).update(gcount=i)
+                li.append(model_to_dict(info))
+                dic_money = float(model_to_dict(info).get('gtotalprice'))
+                li_price += dic_money
+            reality_price = li_price - 10
+            return render(request, 'func/pay_money.html',
+                          {'shopcar': li_shopcar, 'form': li, 'i': i, 'totalprice': str(li_price)[0:6],
+                           'reality_price': str(reality_price)[0:6]})
