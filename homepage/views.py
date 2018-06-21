@@ -1,32 +1,70 @@
 import json
+from homepage.func import fun, news
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import F
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render
 from register.models import Joincars, UserInfo
-from register.views import li_sess
+
 from .models import Typeinfo, Goodsinfo, Change, Smallinfo
 
 # Create your views here.
 li_shopcar = {}  # 判断前端头部界面是否为购物车,或者支付界面,或者用户中心界面
 
 
-#########主页面##############
+#########主页面###########
 def index(request):
     li = []
-    lis = []
     title = Typeinfo.objects.filter()
     for title_ob in title:
         title_dict = model_to_dict(title_ob)
         li.append(title_dict)
-    if li_sess:
-        return render(request, 'home_page/index.html', {'title_info': li, 'name': request.session['name']})
-    else:
+    s = request.COOKIES
+    try:
+        name = request.session['name']
+        if name:
+            return render(request, 'home_page/index.html', {'title_info': li, 'name': name})
+    except:
         return render(request, 'home_page/index.html', {'title_info': li})
 
+
+##########搜索################
 def search(request):
-    return render(request,'func/search.html')
+    if request.method == 'GET':
+        li = []
+        dic_search = {'a': 1}
+        info = request.GET.get('info')
+        # 获取关于搜索关键字的所有数据
+        searchinfo = Goodsinfo.objects.filter(gtitle__contains=info)
+        ifygoods = Goodsinfo.objects.filter(gtype__contains=info)
+        # 生成paginator对象, 定义每页显示6条记录
+        # paginator = Paginator(searchinfo,3)
+        # 从前端获取当前页码数,默认为1
+        page = request.GET.get('page', 1)
+        # 把当前的页码数转换成整数类型
+        # currentPage = int(page)
+        # try:
+        #     searchinfo = paginator.page(page)
+        # except PageNotAnInteger:
+        #     searchinfo = paginator.page(1)
+        # except EmptyPage:
+        #     searchinfo = paginator.page(paginator.num_pages)
+        if searchinfo:
+            paginator = Paginator(searchinfo, 2)
+            fun(page, paginator)
+            for goodsinfo in searchinfo:
+                li.append(model_to_dict(goodsinfo))
+        elif ifygoods:
+            paginator = Paginator(ifygoods, 2)
+            fun(page, paginator)
+            for goodsinfo in ifygoods:
+                li.append(model_to_dict(goodsinfo))
+        if 'name' in request.session:
+            name = request.session['name']
+    return render(request, 'func/search.html', locals())
+
 
 ######### 传递json数据给主页面进行添加水果操作#################
 def add_goods(request):
@@ -45,6 +83,69 @@ def add_goods(request):
             return HttpResponse(json.dumps(result), content_type='Application/json')
 
 
+########  商品列表(默认) #####################
+def fruit_list(request):
+    if request.method == 'GET':
+        li = []
+        new_fruit_li = []
+        dic_search = {'a': 1}
+        fruit_info = Goodsinfo.objects.all().order_by('id')
+        paginator = Paginator(fruit_info, 10)
+        page = request.GET.get('page', 1)
+        s = fun(page, paginator)
+        for info in s:
+            dic = model_to_dict(info)
+            li.append(dic)
+        if 'name' in request.session:
+            name = request.session['name']
+            context = {'dic_search': dic_search, 'info': li, 'name': name,
+                       'paginator': paginator, 'fruit_info': fruit_info, 's': s, 'newfruit': news()}
+        else:
+            context = {'dic_search': dic_search, 'info': li, 's': s,'paginator': paginator, 'fruit_info': fruit_info,'newfruit': news()}
+        return render(request, 'func/fruit_list.html', context=context)
+
+
+########  商品列表(价格) #####################
+def fruit_list2(request):
+    li = []
+    dic_search = {'a': 1}
+    fruit_info = Goodsinfo.objects.order_by('gprice')
+    paginator = Paginator(fruit_info, 10)
+    page = request.GET.get('page', 1)
+    s = fun(page, paginator)
+    for info in s:
+        dic = model_to_dict(info)
+        li.append(dic)
+    if 'name' in request.session:
+        name = request.session['name']
+        context = {'dic_search': dic_search, 'info': li, 'name': name,
+                   'paginator': paginator, 'fruit_info': fruit_info, 's': s, 'newfruit': news()}
+    else:
+        context = {'dic_search': dic_search, 'info': li, 's': s}
+    return render(request, 'func/fruit_list2.html', context=context)
+
+
+########  商品列表(人气----销量) #####################
+def fruit_list3(request):
+    li = []
+    dic_search = {'a': 1}
+    fruit_info = Goodsinfo.objects.order_by('gsalesvolume')
+    paginator = Paginator(fruit_info, 10)
+    page = request.GET.get('page', 1)
+    s = fun(page, paginator)
+    for info in s:
+        dic = model_to_dict(info)
+        li.append(dic)
+    if 'name' in request.session:
+        name = request.session['name']
+        context = {'dic_search': dic_search, 'info': li, 'name': name,
+                   'paginator': paginator, 'fruit_info': fruit_info, 's': s, 'newfruit': news()}
+
+    else:
+        context = {'dic_search': dic_search, 'info': li, 's': s}
+    return render(request, 'func/fruit_list3.html', context=context)
+
+
 ####购买详情界面######
 def car(request):
     li = []
@@ -53,7 +154,8 @@ def car(request):
         goods = Goodsinfo.objects.filter(id=id)
         if goods:
             context = goods[0]
-            if li_sess:
+            if 'name' in request.session:
+                name = request.session['name']
                 return render(request, 'func/car.html', {'name': request.session['name'],
                                                          'form': context})
             else:
@@ -69,26 +171,27 @@ def add_cars(request):
         totalprice = request.POST.get('totalprice')  # 总价
         title = request.POST.get('title')  # 商品名称
         img = request.POST.get('img')  # 图片
-        if li_sess:
-            name = li_sess[0]
+        if 'name' in request.session:
+            name = request.session['name']
             if Joincars.objects.filter(goodsinfo=title):
                 judge_num = unitprice.split('.')
                 if len(judge_num) > 0:  # 判断是否为浮点型和整形  大于0为浮点型 否则反之
                     Joincars.objects.filter(goodsinfo=title).update(goodsnum=F('goodsnum') + int(count),
                                                                     gtotalprice=F('gtotalprice') + (
-                                                                            int(count) * float(unitprice)))
+                                                                            int(count) * float(unitprice)),
+                                                                    is_delete='1')
                 else:
                     Joincars.objects.filter(goodsinfo=title).update(goodsnum=F('goodsnum') + int(count),
                                                                     gtotalprice=F('gtotalprice') + (
                                                                             int(count) * int(unitprice)))
                 return JsonResponse({'res': 1})
             else:
-                cars = Joincars.objects.create(uname=name,
-                                               goodsinfo=title,
-                                               goodsnum=count,
-                                               goodsprice=unitprice,
-                                               gtotalprice=totalprice,
-                                               gimg=img)
+                Joincars.objects.create(uname=name,
+                                        goodsinfo=title,
+                                        goodsnum=count,
+                                        goodsprice=unitprice,
+                                        gtotalprice=totalprice,
+                                        gimg=img)
                 return JsonResponse({'res': 1})
         else:
             return JsonResponse({'res': 0})
@@ -100,16 +203,22 @@ def add_cars(request):
 def shopcar(request):
     li = []
     if request.method == 'GET':
-        if li_sess:
-            name = li_sess[0]
+        dell_id = request.GET.get('id')
+        if 'name' in request.session:
+            name = request.session['name']
+            if dell_id:
+                Joincars.objects.filter(uname=name, id=dell_id).delete()
             info = Joincars.objects.filter(uname=name)
             li_shopcar.update(a='购物车')
             i = 0
             if info:
                 for shopcarinfo in info:
                     i += 1
-                    shop_dict = model_to_dict(shopcarinfo)
-                    li.append(shop_dict)
+                    fruits = model_to_dict(shopcarinfo)
+                    ### 在这进行删除判断,通过isdelete ###
+                    if fruits['is_delete'] == '1':
+                        shop_dict = fruits
+                        li.append(shop_dict)
             return render(request, 'func/shopcar.html', {'shopcar': li_shopcar, 'form': li, 'name': name, 'i': i})
         else:
             # return JsonResponse({'res': 1})
@@ -144,9 +253,8 @@ def pay(request):
         li = []
         li_price = 0
         i = 0
-        reality_price = 00.00
-        if li_sess:
-            name = li_sess[0]
+        if 'name' in request.session:
+            name = request.session['name']
             user_shop = Joincars.objects.filter(uname=name)
             for info in user_shop:
                 i += 1
@@ -155,7 +263,7 @@ def pay(request):
                 li.append(model_to_dict(info))
                 dic_money = float(model_to_dict(info).get('gtotalprice'))
                 li_price += dic_money
-            reality_price = li_price - 10
+            reality_price = li_price + 10
             return render(request, 'func/pay_money.html',
                           {'shopcar': li_shopcar, 'form': li, 'i': i, 'totalprice': str(li_price)[0:6],
-                           'reality_price': str(reality_price)[0:6]})
+                           'reality_price': str(reality_price)[0:6], 'name': name})

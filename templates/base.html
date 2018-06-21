@@ -9,7 +9,24 @@
     <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/static/js/slide.js"></script>
+    <script type="text/javascript" src="/static/js/register.js"></script>
     <script type="text/javascript" src="/static/js/jquery.cookie.js"></script>
+    <script>
+        $(function () {
+            $('.input_btn').click(function () {
+                let SEARCH_URL = 'http://127.0.0.1:8000/home/search';
+                let search_info = $('.input_text').val();
+                if (search_info) {
+                    location.href = SEARCH_URL + '?info=' + search_info
+                } else {
+                    alert('搜索不能为空');
+                    $('.show_error').html('搜索不能为空')
+                }
+
+
+            })
+        })
+    </script>
     {% block js %}
     {% endblock %}
     {% block css %}
@@ -74,20 +91,21 @@
                 </div>
             </div>
         </div>
-
         {% if shopcar %}
             <div class="search_bar clearfix">
-                <a href="index.html" class="logo fl"><img src="/static/images/logo.png"></a>
+                <a href="{% url 'index' %}" class="logo fl"><img src="/static/images/logo.png"></a>
                 <div class="sub_page_name fl">|&nbsp;&nbsp;&nbsp;&nbsp;{{ shopcar.a }}</div>
                 <div class="search_con fr">
                     <input type="text" class="input_text fl" name="" placeholder="搜索商品">
                     <input type="button" class="input_btn fr" name="" value="搜索">
+                    <span style="color: red" class="show_error"></span>
                 </div>
+
             </div>
 
         {% else %}
             <div class="search_bar clearfix">
-                <a href="index.html" class="logo fl"><img src="/static/images/logo.png"></a>
+                <a href="{% url 'index' %}" class="logo fl"><img src="/static/images/logo.png"></a>
                 <div class="search_con fl">
                     <input type="text" class="input_text fl" name="" placeholder="搜索商品">
                     <input type="button" class="input_btn fr" name="" value="搜索">
@@ -97,18 +115,22 @@
                     <div class="goods_count fl" id="show_count">1</div>
                 </div>
             </div>
-            <div class="navbar_con">
-                <div class="navbar">
-                    <h1 class="fl">全部商品分类</h1>
-                    <ul class="navlist fl">
-                        <li><a href="{% url 'login' %}">首页</a></li>
-                        <li class="interval">|</li>
-                        <li><a href="">手机生鲜</a></li>
-                        <li class="interval">|</li>
-                        <li><a href="">抽奖</a></li>
-                    </ul>
+            {% if dic_search %}
+            {% else %}
+                <div class="navbar_con">
+                    <div class="navbar">
+                        <h1 class="fl">全部商品分类</h1>
+                        <ul class="navlist fl">
+                            <li><a href="{% url 'index' %}">首页</a></li>
+                            <li class="interval">|</li>
+                            <li><a href="">手机生鲜</a></li>
+                            <li class="interval">|</li>
+                            <li><a href="">抽奖</a></li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
+            {% endif %}
+
         {% endif %}
     {% endif %}
 

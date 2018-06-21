@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
-
+{% block css %}
+    <style type="text/css">
+        #pager > li {
+            float: left;
+        }
+    </style>
+{% endblock %}
 {% block content %}
 
     <div class="main_con clearfix">
@@ -11,7 +17,7 @@
                 <li><a href="{% url 'address' %}">· 收货地址</a></li>
             </ul>
         </div>
-        <div class="right_content clearfix">
+        <ul class="right_content clearfix">
             <h3 class="common_title2">全部订单</h3>
             <ul class="order_list_th w978 clearfix">
                 <li class="col01">{{ createtime }}</li>
@@ -23,7 +29,7 @@
                 <tbody>
                 <tr>
                     <td width="55%">
-                        {% for foo in form %}
+                        {% for foo in goods_shop %}
                             <ul class="order_goods_list clearfix">
                                 <li class="col01"><img src="{{ foo.gimg }}"></li>
                                 <li class="col02">{{ foo.goodsinfo }}<em>{{ foo.goodsprice }}/500g</em></li>
@@ -62,18 +68,34 @@
                 </tbody>
             </table>
 
-            <div class="pagenation">
-                <a href="#">
-                    <上一页></上一页>
-                </a>
-                <a href="#" class="active">1</a>
-                <a href="#">2</a>
-                <a href="#">3</a>
-                <a href="#">4</a>
-                <a href="#">5</a>
-                <a href="#">下一页></a>
-            </div>
-        </div>
+            <ul class="pagenation" id="pager">
+                {% if goods_shop.has_previous %}
+                    <!-- 当前页的上一页按钮正常使用-->
+                    <li class="previous"><a href="{% url 'order' %}/?page={{ goods_shop.previous_page_number }}">上一页</a>
+                    </li>
+                {% else %}
+                    <!-- 当前页的不存在上一页时,上一页的按钮不可用-->
+                    <li class="previous disabled"><a href="#">上一页</a></li>
+                {% endif %}
+                <!-- 上一页按钮结束 -->
+                <!-- 页码开始 -->
+                {% for num in paginator.page_range %}
+                    {% if num ==  currentPage %}
+                        <li class="item active"><a href="{% url 'order' %}/?page={{ num }}">{{ num }}</a></li>
+                    {% else %}
+                        <li class="item"><a href="{% url 'order' %}/?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                <!-- 页码结束 -->
+                <!--下一页按钮开始 -->
+                {% if goods_shop.has_next %}
+                    <li class="next"><a href="{% url 'order' %}/?page={{ goods_shop.next_page_number }}">下一页</a></li>
+                {% else %}
+                    <li class="next disabled"><a href="#">下一页</a></li>
+                {% endif %}
+                <!-- 下一页按钮结束 -->
+            </ul>
+        </ul>
     </div>
 
 

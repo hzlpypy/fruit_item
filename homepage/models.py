@@ -5,6 +5,7 @@ import datetime
 from django.db.models import QuerySet
 from django.db.models.fields.files import ImageFieldFile
 from django.utils import timezone
+from tinymce.models import HTMLField  # 富文本编译器
 
 
 class Change(models.Model):
@@ -57,10 +58,11 @@ class Goodsinfo(Change):
     gid = models.ForeignKey('Typeinfo')
     gtitle = models.CharField(max_length=64, verbose_name='小商品标题')
     gtype = models.CharField(max_length=64, verbose_name='商品类别')
-    gprice = models.CharField(max_length=32, verbose_name='商品价格')
+    gprice = models.DecimalField(max_digits=5,decimal_places=2,verbose_name='商品价格')
     gimg = models.ImageField(verbose_name='图片', upload_to='uploads/%Y/%m/', default='1')
     ginfo = models.CharField(max_length=255, verbose_name='商品介绍', default='1')
-    gdetailed = models.CharField(max_length=1000, verbose_name='商品详情', default='1')
+    gdetailed = HTMLField(default='1')
+    gsalesvolume = models.IntegerField(max_length=255,verbose_name='销量',default='1')
     gevaluate = models.CharField(max_length=255, verbose_name='商品评论', default='1')
     addtime = models.DateField(default=timezone.now, verbose_name='创建时间')
     a_updatetime = models.DateTimeField(default=timezone.now, verbose_name='更新时间')

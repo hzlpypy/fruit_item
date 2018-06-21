@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
     <div class="login_top clearfix">
-        <a href="index.html" class="login_logo"><img src="/static/images/logo02.png"></a>
+        <a href="{% url 'index' %}" class="login_logo"><img src="/static/images/logo02.png"></a>
     </div>
     <div class="login_form_bg">
         <div class="login_form_wrap clearfix">
@@ -19,6 +19,7 @@
                 <div class="form_input">
                     <form method="post" action="{% url 'login' %}">
                         {{ form.name }}
+
                         {% if error.name.0 %}
                             <span style="color: red">{{ error.name.0 }}</span>
                         {% endif %}
@@ -30,7 +31,7 @@
                             <div>
                                 <span style="color: red">{{ error }}</span>
                             </div>
-                            <input type="checkbox" name="">
+                            <input type="checkbox" name="jizhu" value="1">
                             <label>记住用户名</label>
                             <a href="#">忘记密码</a>
                         </div>

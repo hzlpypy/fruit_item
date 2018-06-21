@@ -1,0 +1,29 @@
+  优化:
+  1.用户设计方面
+    在用户表设计方面,可以在register的models层的user里面在添加address表的相关信息,
+这样就节省了mysql的空间,方便了数据的显示.
+     register的views层中,密码加密,用 from hashlib import sha1 进行加密处理
+  2.全局的cookie和session:
+    登录中的记住,设定默认值0,在前端添加value属性为1,如果点击获取属性变为1.后端选取这个
+    value值,然后通过 .set_cookie的方法,进行保存
+    如果登路成功,直接用request.session['name'] = 值  的方法保存在全局session中,就不用
+    在添加到list中,多此一举.同时也可在登陆中包含HttpResponse的赋值变量red给与 red,set_cookie('uname',uname)的属性保存在COOKIE中.
+    ##########
+  3.功能模块中,在GoodsInfo模型中,将gprice的类型定义为
+               DecimalField(max_digits=5,decimal_places=2),其中max_digits表示整数位最大位数,
+               decimal_places表示最大精度,即小数位最多有几位,一般用于金额的判断. 其中
+               max_digits必须 大于 decimal_places,否则报错......
+               商品介绍采用导入  from tinymce import HTMLField(富文本编译器)  采用这种方式之前首先要通过
+               pip install django-tinymce ,然后再setting.py文件的app中注册tinymce包,才能发挥其作用.
+  4.购物车模块中:
+    删除: 从新添加删除功能(假删除,删除时将is_delete改为0,如果在次添加同样的商品,将update改为1即可),
+         在删除的href中添加路径,指明需要删除的ID,并添加弹窗确定功能,防止误删.
+
+
+
+
+
+
+
+
+

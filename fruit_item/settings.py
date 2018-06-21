@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'register',
     'homepage',
-    'userinfos',
+    'userinfos',### 富文本编译器
+    'tinymce',
 ]
 
 MIDDLEWARE = [
@@ -125,12 +126,18 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 # MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
 
+##开发阶段上传文件目录
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
+##部署阶段上传文件目录
+# MEDIA_ROOT = ''
+
+####### session 的过期时间 ########
 SESSION_ENGINE='django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # session 的保存时间是两个周
 
-##########  send_email  ######################
+
+##########  send_email 邮件配置,以url为例  ######################
 # 这一项是固定的
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # smtp服务的邮箱服务器,先用163邮箱尝试
@@ -143,3 +150,12 @@ EMAIL_HOST_USER = 'hzl5201314159@163.com'
 EMAIL_HOST_PASSWORD = 'hzl132773'
 #收件人看到的发件人 <此处要和发送邮件的邮箱相同>
 # EMAIL_FROM = 'python<yqq520131459@163.com>'
+
+
+### 富文本编译器的配置 ####
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': 'advanced',
+    'width': 600,
+    'height': 400,
+}
+    ### end ###

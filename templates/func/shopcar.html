@@ -83,7 +83,10 @@
             })
 
         })
-
+        function dd() {
+            if (confirm('请确认是否删除')) return true;
+            return false;
+        }
     </script>
 {% endblock %}
 {% block content %}
@@ -97,7 +100,7 @@
         <li class="col06">操作</li>
     </ul>
     {% for foo in form %}
-        <ul class="cart_list_td clearfix" id="{{ foo.id }}">
+        <ul class="cart_list_td clearfix " id="{{ foo.id }}">
             <li class="col01"><input type="checkbox" name="checkname" checked value="1"></li>
             <li class="col02"><img src="{{ foo.gimg }}"></li>
             <li class="col03">{{ foo.goodsinfo }}<br><em>{{ foo.goodsprice }}元/500g</em></li>
@@ -111,7 +114,7 @@
                 </div>
             </li>
             <li class="col07">{{ foo.gtotalprice }}元</li>
-            <li class="col08"><a href="javascript:;">删除</a></li>
+            <li class="col08"><a href="{% url 'shopcar' %}?id={{ foo.id }}" class="dell" onclick="return dd()">删除</a></li>
         </ul>
     {% endfor %}
     <ul class="settlements">

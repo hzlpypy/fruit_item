@@ -8,7 +8,7 @@ from homepage.models import Change
 
 class UserInfo(models.Model):
     uname = models.CharField(max_length=32,verbose_name='用户名')
-    upwd = models.CharField(max_length=32,verbose_name='密码')
+    upwd = models.CharField(max_length=255,verbose_name='密码')
     uemail = models.EmailField(max_length=32,verbose_name='邮箱')
     create_data = models.DateTimeField(u'时间', auto_now_add=True, editable=True)
     update_time = models.DateTimeField(default=timezone.now)
