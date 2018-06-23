@@ -39,7 +39,7 @@
                         $('<img>').attr('src', IMG_URL + obj.banner).appendTo($('<div>').attr('class', 'goods_banner fl').appendTo(four_div));
                         let ul = $('<ul>').attr('class', 'goods_list fl').appendTo(four_div);
                         $('<a>').attr({
-                            'href': '{% url 'list' %}', 'class': 'goods_more ffr',
+                            'href': "/home/list0_1_1", 'class': 'goods_more ffr',
                             'id': 'fruit_more'
                         }).text('查看更多').appendTo($('<li>').appendTo(uls));
                         for (let obj2 of obj.fruit) {

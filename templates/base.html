@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    {% block title %}
-    {% endblock %}
+    <title>天天生鲜{{ title }}</title>
     <link rel="stylesheet" type="text/css" href="/static/css/reset.css">
     <link rel="stylesheet" type="text/css" href="/static/css/main.css">
     <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
@@ -17,7 +16,7 @@
                 let SEARCH_URL = 'http://127.0.0.1:8000/home/search';
                 let search_info = $('.input_text').val();
                 if (search_info) {
-                    location.href = SEARCH_URL + '?info=' + search_info
+                    location.href = SEARCH_URL + '1_1_1' + '?info=' + search_info
                 } else {
                     alert('搜索不能为空');
                     $('.show_error').html('搜索不能为空')
@@ -68,9 +67,10 @@
                     <div class="login_info fl">
                         欢迎您：<em>张 山</em>
                     </div>
-                    {% if name %}
+                    {% if request.session.name|default:'' != '' %}
                         <div class="login_btn fl">
-                            <span style="color: red">欢迎您:<a>{{ name }}</a></span>
+                            <span style="color: red">欢迎您:<a>{{ request.session.name }}</a></span>
+                            <span style="color: red"><a href="{% url 'logout' %}">退出</a></span>
                         </div>
                     {% else %}
                         <div class="login_btn fl">

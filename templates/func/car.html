@@ -8,7 +8,7 @@
                 if (num > 0) {
                     $('.num_show').attr('value', num);
                     let price = $('#doller').html();
-                    let new_price = price.slice(0,-1);
+                    let new_price = price.slice(0, -1);
                     $('#shows').text(new_price * $('.num_show').attr('value') + '元')
                 }
                 if (num === 0) {
@@ -30,13 +30,13 @@
         });
         $(function () {
             $('.add_cart').click(function () {
-                let CAR_URL = 'http://127.0.0.1:8000/home/shop';
+                let CAR_URL = 'http://127.0.0.1:8000/home/shop/';
                 let count = $('.num_show').val();
                 let unitprice = $('#doller').text();
-                let totalprice = $('#shows').text().slice(0,-1);
+                let totalprice = $('#shows').text().slice(0, -1);
                 let title = $('#title').text();
                 let img = $('.shopimg').attr('src');
-                alert(img);
+                //alert(img);
                 let shop = {
                     'count': count,
                     'unitprice': unitprice,
@@ -46,9 +46,10 @@
                 };
                 $.post(CAR_URL, shop, function (data) {
                     if (data.res === 0) {
-                        alert('请登录')
+                        alert('请登录');
+                        location.href = '/register/jizhu/'
                     }
-                    if(data.res === 1){
+                    if (data.res === 1) {
                         alert('添加成功')
                     }
                 })
@@ -59,6 +60,37 @@
     </script>
 {% endblock %}
 {% block content %}
+    <div class="navbar_con">
+        <div class="navbar clearfix">
+            <div class="subnav_con fl">
+                <a href="/home/list0_1_1"><h1>全部商品分类</h1></a>
+                <span></span>
+                <ul class="subnav">
+                    <li><a href="/home/list1_1_1" class="fruit">新鲜水果</a></li>
+                    <li><a href="/home/list2_1_1" class="seafood">海鲜水产</a></li>
+                    <li><a href="/home/list3_1_1" class="meet">猪牛羊肉</a></li>
+                    <li><a href="/home/list4_1_1" class="egg">禽类蛋品</a></li>
+                    <li><a href="/home/list5_1_1" class="vegetables">新鲜蔬菜</a></li>
+                    <li><a href="/home/list6_1_1" class="ice">速冻食品</a></li>
+                </ul>
+            </div>
+            <ul class="navlist fl">
+                <li><a href="{% url 'index' %}">首页</a></li>
+                <li class="interval">|</li>
+                <li><a href="">手机生鲜</a></li>
+                <li class="interval">|</li>
+                <li><a href="">抽奖</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="breadcrumb">
+        <a href="/home/list0_1_1">全部分类</a>
+        <span>></span>
+        <a href="/home/list{{ id }}_1_1">{{ types }}</a>
+        <span>></span>
+        <a href="#">商品详情</a>
+    </div>
     <div class="goods_detail_con clearfix">
         <div class="goods_detail_pic fl"><img src="/static/{{ form.gimg }}" class="shopimg"></div>
 
@@ -90,14 +122,15 @@
                 <h3>新品推荐</h3>
                 <ul>
                     <li>
-                        <a href="#"><img src="/static/images/goods/goods001.jpg" class="imgs"></a>
-                        <h4><a href="#">进口柠檬</a></h4>
-                        <div class="prize">￥3.90</div>
+                        <a href="{% url 'car' %}?id={{ order_li.0.id }}"><img src="/static/{{ order_li.0.gimg }}"
+                                                                              class="imgs"></a>
+                        <h4><a href="{% url 'car' %}?id={{ order_li.0.id }}">{{ order_li.0.gtitle }}</a></h4>
+                        <div class="prize">￥{{ order_li.0.gprice }}</div>
                     </li>
                     <li>
-                        <a href="#"><img src="/static/images/goods/goods002.jpg"></a>
-                        <h4><a href="#">玫瑰香葡萄</a></h4>
-                        <div class="prize">￥16.80</div>
+                        <a href="{% url 'car' %}?id={{ order_li.1.id }}"><img src="/static/{{ order_li.1.gimg }}"></a>
+                        <h4><a href="{% url 'car' %}?id={{ order_li.1.id }}">{{ order_li.1.gtitle }}</a></h4>
+                        <div class="prize">￥{{ order_li.1.gprice }}</div>
                     </li>
                 </ul>
             </div>

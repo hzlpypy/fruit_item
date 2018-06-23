@@ -10,4 +10,5 @@ urlpatterns = [
     url('login/', views.login, name='login'),
     url('verify/', verifycode.verifycode, name='verify'),
     url('jizhu/', views.jizhu_login, name='jizhu'),
+    url('logout/',views.logout,name='logout')
 ]

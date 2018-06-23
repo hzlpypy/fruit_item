@@ -10,9 +10,10 @@ from register.models import UserInfo
 
 class User(forms.Form):
     name = forms.CharField(label='用户名', required=True, max_length=32, error_messages={'required': '请输入用户名'})
-    pwd = forms.CharField(required=True, min_length=6, max_length=32, error_messages={'required': '请输入密码'}, label='密码')
+    pwd = forms.CharField(required=True, min_length=6, max_length=32, error_messages={'required': '请输入密码'}, label='密码',
+                          widget=forms.TextInput(attrs={'type':'password'}))
     aginpwd = forms.CharField(required=True, min_length=6, max_length=32, error_messages={'required': '请输入确认密码'},
-                              label='再次输入密码')
+                              label='再次输入密码', widget=forms.TextInput(attrs={'type':'password'}))
     email = forms.EmailField(required=True, error_messages={'required': '邮箱不能为空'})
 
     def clean(self):
@@ -36,7 +37,8 @@ class LoginForm(forms.Form):
                            error_messages={'required':'请输入用户名'},
                            widget=forms.TextInput(attrs={'class':'name_input','placeholder':'请输入用户名'}))
     pwd = forms.CharField(required=True,min_length=3,max_length=32,error_messages={'required':'请输入密码'},
-                          widget=forms.TextInput(attrs={'class':'pass_input','placeholder':'请输入密码'}))
+                          widget=forms.TextInput(attrs={'type':'password','class':'pass_input','placeholder':'请输入密码',
+                                                        'oncopy':'return false','onpaste':'return false'}))
 
     def clean(self):
         try:

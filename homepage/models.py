@@ -61,7 +61,8 @@ class Goodsinfo(Change):
     gprice = models.DecimalField(max_digits=5,decimal_places=2,verbose_name='商品价格')
     gimg = models.ImageField(verbose_name='图片', upload_to='uploads/%Y/%m/', default='1')
     ginfo = models.CharField(max_length=255, verbose_name='商品介绍', default='1')
-    gdetailed = HTMLField(default='1')
+    gdetailed = HTMLField(default='1') ### 商品介绍
+    gcommon = HTMLField(default='1') ### 商品评论
     gsalesvolume = models.IntegerField(max_length=255,verbose_name='销量',default='1')
     gevaluate = models.CharField(max_length=255, verbose_name='商品评论', default='1')
     addtime = models.DateField(default=timezone.now, verbose_name='创建时间')

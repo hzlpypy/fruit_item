@@ -7,7 +7,7 @@ from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render
 from register.models import Joincars, UserInfo
-
+from homepage import func
 from .models import Typeinfo, Goodsinfo, Change, Smallinfo
 
 # Create your views here.
@@ -25,45 +25,46 @@ def index(request):
     try:
         name = request.session['name']
         if name:
-            return render(request, 'home_page/index.html', {'title_info': li, 'name': name})
+            return render(request, 'home_page/index.html', {'title_info': li, 'name': name, 'title': '-首页'})
     except:
-        return render(request, 'home_page/index.html', {'title_info': li})
+        return render(request, 'home_page/index.html', {'title_info': li, 'title': '-首页'})
 
 
 ##########搜索################
-def search(request):
+def search(request,id,pindex,sort):
     if request.method == 'GET':
-        li = []
+        id_active = ''
+        pri_active = ''
+        sal_active = ''
+        info = []
         dic_search = {'a': 1}
-        info = request.GET.get('info')
+        fruit_info = request.GET.get('info')
         # 获取关于搜索关键字的所有数据
-        searchinfo = Goodsinfo.objects.filter(gtitle__contains=info)
-        ifygoods = Goodsinfo.objects.filter(gtype__contains=info)
-        # 生成paginator对象, 定义每页显示6条记录
-        # paginator = Paginator(searchinfo,3)
-        # 从前端获取当前页码数,默认为1
+        if sort == '1': # 按默认排序
+            searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('id')
+            ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('id')
+            id_active = 'id'
+        elif sort == '2': # 价格排序
+            searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('gprice')
+            ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('gprice')
+            pri_active = 'gprice'
+        else:
+            searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('gsalesvolume')
+            ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('gsalesvolume')
+            sal_active = 'gsalesvolume'
         page = request.GET.get('page', 1)
-        # 把当前的页码数转换成整数类型
-        # currentPage = int(page)
-        # try:
-        #     searchinfo = paginator.page(page)
-        # except PageNotAnInteger:
-        #     searchinfo = paginator.page(1)
-        # except EmptyPage:
-        #     searchinfo = paginator.page(paginator.num_pages)
         if searchinfo:
             paginator = Paginator(searchinfo, 2)
             fun(page, paginator)
             for goodsinfo in searchinfo:
-                li.append(model_to_dict(goodsinfo))
+                info.append(model_to_dict(goodsinfo))
         elif ifygoods:
             paginator = Paginator(ifygoods, 2)
             fun(page, paginator)
             for goodsinfo in ifygoods:
-                li.append(model_to_dict(goodsinfo))
-        if 'name' in request.session:
-            name = request.session['name']
-    return render(request, 'func/search.html', locals())
+                info.append(model_to_dict(goodsinfo))
+        newfruit = news()
+    return render(request, 'func/fruit_list.html', locals())
 
 
 ######### 传递json数据给主页面进行添加水果操作#################
@@ -83,147 +84,131 @@ def add_goods(request):
             return HttpResponse(json.dumps(result), content_type='Application/json')
 
 
-########  商品列表(默认) #####################
-def fruit_list(request):
+########  商品列表 #####################
+def fruit_list(request, id, pindex, sort):  # id表示商品类别,例如0代表全部,1代表新鲜水果..sort是按什么类别来排序
     if request.method == 'GET':
+        list = '5'
+        id_active = ''
+        pri_active = ''
+        sal_active = ''
         li = []
-        new_fruit_li = []
         dic_search = {'a': 1}
-        fruit_info = Goodsinfo.objects.all().order_by('id')
-        paginator = Paginator(fruit_info, 10)
+        classifys = Typeinfo.objects.filter(id=id)
+        if classifys:
+            dic_classify = model_to_dict(classifys.first()).get('title')
+        else:
+            dic_classify = ''
+        if id == '0':  # 表示取全部
+            goodsinfo = Goodsinfo.objects.all()
+        else:
+            typeinfo = Typeinfo.objects.get(id=id)
+            goodsinfo = typeinfo.goodsinfo_set.all()
+        if sort == '1':  # 按默认排序
+            fruit_info = goodsinfo.order_by('id')
+            id_active = 'active'
+        elif sort == '2':  # 按价格排序
+            fruit_info = goodsinfo.order_by('gprice')
+            pri_active = 'active'
+        else:
+            fruit_info = goodsinfo.order_by('gsalesvolume')
+            sal_active = 'active'
+        paginator = Paginator(fruit_info, 8)
         page = request.GET.get('page', 1)
         s = fun(page, paginator)
         for info in s:
             dic = model_to_dict(info)
             li.append(dic)
-        if 'name' in request.session:
-            name = request.session['name']
-            context = {'dic_search': dic_search, 'info': li, 'name': name,
-                       'paginator': paginator, 'fruit_info': fruit_info, 's': s, 'newfruit': news()}
-        else:
-            context = {'dic_search': dic_search, 'info': li, 's': s,'paginator': paginator, 'fruit_info': fruit_info,'newfruit': news()}
+        context = {'dic_search': dic_search, 'info': li,
+                   'paginator': paginator, 'fruit_info': fruit_info,
+                   's': s, 'newfruit': news(), 'url': '/home/list{}_1_{}'.format(id, sort),
+                   'id_active': id_active, 'pri_active': pri_active,
+                   'sal_active': sal_active, 'id': id, 'dic_classify': dic_classify,'list':list}
         return render(request, 'func/fruit_list.html', context=context)
-
-
-########  商品列表(价格) #####################
-def fruit_list2(request):
-    li = []
-    dic_search = {'a': 1}
-    fruit_info = Goodsinfo.objects.order_by('gprice')
-    paginator = Paginator(fruit_info, 10)
-    page = request.GET.get('page', 1)
-    s = fun(page, paginator)
-    for info in s:
-        dic = model_to_dict(info)
-        li.append(dic)
-    if 'name' in request.session:
-        name = request.session['name']
-        context = {'dic_search': dic_search, 'info': li, 'name': name,
-                   'paginator': paginator, 'fruit_info': fruit_info, 's': s, 'newfruit': news()}
-    else:
-        context = {'dic_search': dic_search, 'info': li, 's': s}
-    return render(request, 'func/fruit_list2.html', context=context)
-
-
-########  商品列表(人气----销量) #####################
-def fruit_list3(request):
-    li = []
-    dic_search = {'a': 1}
-    fruit_info = Goodsinfo.objects.order_by('gsalesvolume')
-    paginator = Paginator(fruit_info, 10)
-    page = request.GET.get('page', 1)
-    s = fun(page, paginator)
-    for info in s:
-        dic = model_to_dict(info)
-        li.append(dic)
-    if 'name' in request.session:
-        name = request.session['name']
-        context = {'dic_search': dic_search, 'info': li, 'name': name,
-                   'paginator': paginator, 'fruit_info': fruit_info, 's': s, 'newfruit': news()}
-
-    else:
-        context = {'dic_search': dic_search, 'info': li, 's': s}
-    return render(request, 'func/fruit_list3.html', context=context)
 
 
 ####购买详情界面######
 def car(request):
     li = []
+    order_li = []
     if request.method == 'GET':
+        dic_search = {'a': 1}
         id = request.GET.get('id')
-        goods = Goodsinfo.objects.filter(id=id)
+        goods = Goodsinfo.objects.filter(id=id)  ###通过id获取下面类别
+        fruit_info = Goodsinfo.objects.all().order_by('id') ### 对id进行排序,下面取最后两个
         if goods:
-            context = goods[0]
-            if 'name' in request.session:
-                name = request.session['name']
-                return render(request, 'func/car.html', {'name': request.session['name'],
-                                                         'form': context})
-            else:
-                return render(request, 'func/car.html', {'form': context})
+            #####  获取类别  #####
+            new_fruit = model_to_dict(goods.first())
+            ss = new_fruit.get('gid')
+            fruit_type = Typeinfo.objects.get(id=ss)
+            types = model_to_dict(fruit_type).get('title')
+            ######  获取结束 #####
+            for two_new_fruit in fruit_info:
+                li.append(model_to_dict(two_new_fruit))
+            order_li = li[-2:]
+            fruits = goods[0]
+            return render(request, 'func/car.html', {'form': fruits,'order_li': order_li,'dic_search':dic_search,'types':types,'id':ss})
+
     return HttpResponse('呵呵')
 
 
 #####  添加到购物车########
 def add_cars(request):
-    if request.method == 'POST':
+    if 'name' in request.session:
         count = request.POST.get('count')  # 个数
         unitprice = request.POST.get('unitprice')  # 单价
         totalprice = request.POST.get('totalprice')  # 总价
         title = request.POST.get('title')  # 商品名称
         img = request.POST.get('img')  # 图片
-        if 'name' in request.session:
-            name = request.session['name']
-            if Joincars.objects.filter(goodsinfo=title):
-                judge_num = unitprice.split('.')
-                if len(judge_num) > 0:  # 判断是否为浮点型和整形  大于0为浮点型 否则反之
-                    Joincars.objects.filter(goodsinfo=title).update(goodsnum=F('goodsnum') + int(count),
-                                                                    gtotalprice=F('gtotalprice') + (
-                                                                            int(count) * float(unitprice)),
-                                                                    is_delete='1')
-                else:
-                    Joincars.objects.filter(goodsinfo=title).update(goodsnum=F('goodsnum') + int(count),
-                                                                    gtotalprice=F('gtotalprice') + (
-                                                                            int(count) * int(unitprice)))
-                return JsonResponse({'res': 1})
+        name = request.session['name']
+        if Joincars.objects.filter(goodsinfo=title):
+            judge_num = unitprice.split('.')
+            if len(judge_num) > 0:  # 判断是否为浮点型和整形  大于0为浮点型 否则反之
+                Joincars.objects.filter(goodsinfo=title).update(goodsnum=F('goodsnum') + int(count),
+                                                                gtotalprice=F('gtotalprice') + (
+                                                                        int(count) * float(unitprice)),
+                                                                is_delete='1')
             else:
-                Joincars.objects.create(uname=name,
-                                        goodsinfo=title,
-                                        goodsnum=count,
-                                        goodsprice=unitprice,
-                                        gtotalprice=totalprice,
-                                        gimg=img)
-                return JsonResponse({'res': 1})
+                Joincars.objects.filter(goodsinfo=title).update(goodsnum=F('goodsnum') + int(count),
+                                                                gtotalprice=F('gtotalprice') + (
+                                                                        int(count) * int(unitprice)))
+            return JsonResponse({'res': 1})
         else:
-            return JsonResponse({'res': 0})
+            Joincars.objects.create(uname=name,
+                                    goodsinfo=title,
+                                    goodsnum=count,
+                                    goodsprice=unitprice,
+                                    gtotalprice=totalprice,
+                                    gimg=img)
+            return JsonResponse({'res': 1})
+            # url = request.COOKIES.get('url','/')
+            # return HttpResponseRedirect(url)
     else:
-        return JsonResponse({'res': 0})
+        return JsonResponse({'res':0})
+
+
 
 
 #####购物车系统##########
+@func.login
 def shopcar(request):
     li = []
     if request.method == 'GET':
         dell_id = request.GET.get('id')
-        if 'name' in request.session:
-            name = request.session['name']
-            if dell_id:
-                Joincars.objects.filter(uname=name, id=dell_id).delete()
-            info = Joincars.objects.filter(uname=name)
-            li_shopcar.update(a='购物车')
-            i = 0
-            if info:
-                for shopcarinfo in info:
-                    i += 1
-                    fruits = model_to_dict(shopcarinfo)
-                    ### 在这进行删除判断,通过isdelete ###
-                    if fruits['is_delete'] == '1':
-                        shop_dict = fruits
-                        li.append(shop_dict)
-            return render(request, 'func/shopcar.html', {'shopcar': li_shopcar, 'form': li, 'name': name, 'i': i})
-        else:
-            # return JsonResponse({'res': 1})
-            return HttpResponseRedirect('/register/login')
-    pass
+        name = request.session['name']
+        if dell_id:
+            Joincars.objects.filter(uname=name, id=dell_id).delete()
+        info = Joincars.objects.filter(uname=name)
+        li_shopcar.update(a='购物车')
+        i = 0
+        if info:
+            for shopcarinfo in info:
+                i += 1
+                fruits = model_to_dict(shopcarinfo)
+                ### 在这进行删除判断,通过isdelete ###
+                if fruits['is_delete'] == '1':
+                    shop_dict = fruits
+                    li.append(shop_dict)
+        return render(request, 'func/shopcar.html', {'shopcar': li_shopcar, 'form': li,'i': i})
 
 
 ######前端点击修改商数量时,购物车数据库数据跟着修改#############
@@ -247,23 +232,23 @@ def change_count(request):
 
 
 #########点击支付界面####################
+@func.login
 def pay(request):
     if request.method == 'GET':
         li_shopcar.update(a='提交订单')
         li = []
         li_price = 0
         i = 0
-        if 'name' in request.session:
-            name = request.session['name']
-            user_shop = Joincars.objects.filter(uname=name)
-            for info in user_shop:
-                i += 1
-                dic = model_to_dict(info).get('goodsinfo')
-                Joincars.objects.filter(uname=name, goodsinfo=dic).update(gcount=i)
-                li.append(model_to_dict(info))
-                dic_money = float(model_to_dict(info).get('gtotalprice'))
-                li_price += dic_money
-            reality_price = li_price + 10
-            return render(request, 'func/pay_money.html',
-                          {'shopcar': li_shopcar, 'form': li, 'i': i, 'totalprice': str(li_price)[0:6],
-                           'reality_price': str(reality_price)[0:6], 'name': name})
+        name = request.session['name']
+        user_shop = Joincars.objects.filter(uname=name)
+        for info in user_shop:
+            i += 1
+            dic = model_to_dict(info).get('goodsinfo')
+            Joincars.objects.filter(uname=name, goodsinfo=dic).update(gcount=i)
+            li.append(model_to_dict(info))
+            dic_money = float(model_to_dict(info).get('gtotalprice'))
+            li_price += dic_money
+        reality_price = li_price + 10
+        return render(request, 'func/pay_money.html',
+                      {'shopcar': li_shopcar, 'form': li, 'i': i, 'totalprice': str(li_price)[0:6],
+                       'reality_price': str(reality_price)[0:6]})
