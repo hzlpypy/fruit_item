@@ -1,13 +1,13 @@
   优化(BUG修改):
   1.用户设计方面
     在用户表设计方面,可以在register的models层的user里面在添加address表的相关信息,
-这样就节省了mysql的空间,方便了数据的显示.
-     register的views层中,密码加密,用 from hashlib import sha1 进行加密处理
+    这样就节省了mysql的空间,方便了数据的显示.
+    register的views层中,密码加密,用 from hashlib import sha1 进行加密处理
   2.全局的cookie和session:
     登录中的记住,设定默认值0,在前端添加value属性为1,如果点击获取属性变为1.后端选取这个
     value值,然后通过 .set_cookie的方法,进行保存
     如果登路成功,直接用request.session['name'] = 值  的方法保存在全局session中,就不用
-    在添加到list中,多此一举.同时也可在登陆中包含HttpResponse的赋值变量red给与 red,set_cookie('uname',uname)的属性保存在COOKIE中.
+    在添加到list中,多此一举.同时也可在登陆中包含HttpResponse的赋值变量red给与 red.set_cookie('uname',uname)的属性保存在COOKIE中.
     ##########
   3.功能模块中,在GoodsInfo模型中,将gprice的类型定义为
                DecimalField(max_digits=5,decimal_places=2),其中max_digits表示整数位最大位数,
@@ -34,7 +34,25 @@
   9.密码禁止明文,在前端将input密码格式中的type='text' 改为  type = 'password' oncopy="return false"(禁止复制)
                                                                             onpaste="return false"(禁止粘贴)
   10.修改注册登录的判断机制,封装一个装饰器,节省相关代码,并增加从定登录跳转原页面功能(暂未全部实现)
+  11.实现最近浏览功能,采用存放cookie机制.其中进入用户中心时,将用户cookie浏览信息存入数据库,用户退出时清除浏览cookie.
+  12.搜索的功能,采用django自带的全文检索,下载
+                            pip install django-haystack
+                            pip install whoosh
+                            pip install jieba   并进行相应配置,详情见django包中相关生鲜配置.
+     若要影响全文检索的源代码,可以将主urls.py中的search注掉,然后再功能模块homepage的views.py中编写一个 MySearchView类,
+  继承SearchView,在方法中对 MySearchView通过super方法进行实例化,之后通过context方法,传递参数,最后返回.
 
+
+  总结:
+    此次项目,学到以下几点:
+        1.需求分析,模型设计,数据库设计尤为重要,对一个网页的整体布局关乎后面代码的简易
+        2.善于利用cookie和session的机制,在全局中设置多个session和cookie供给判断
+        3.模型层的价格可以利用例如: DecimalField(max_digits=5,decimal_places=2) (一般价格都已这种方法实现)
+          评论和介绍功能可以采用
+        4.在逻辑层中,除了继承request,还可以另外多传几个参数,方便编写,不论前端还是后端,可节约大量代码,用一个函数实现三个函数的功能.
+                例如上面优化中的第6点
+
+    还需多加练习,多多熟练
 
 
 

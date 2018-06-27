@@ -13,3 +13,16 @@ homepage/__pycache__/
 homepage/migrations/__pycache__/
 register/__pycache__/
 register/migrations/__pycache__/
+homepage/migrations/0002_auto_20180612_2009.py
+homepage/migrations/0003_auto_20180620_1107.py
+homepage/migrations/0004_goodsinfo_gsalesvolume.py
+homepage/migrations/0005_auto_20180620_2024.py
+homepage/migrations/0006_goodsinfo_gcommon.py
+register/migrations/0002_auto_20180619_1605.py
+register/migrations/0003_auto_20180623_1509.py
+"static/uploads/2018/06/QQ\346\210\252\345\233\27620180609162639_8y5FgoX.jpg"
+static/uploads/2018/06/goods02.jpg
+userinfos/__pycache__/
+userinfos/migrations/0003_lateky.py
+userinfos/migrations/0004_auto_20180623_1706.py
+userinfos/migrations/__pycache__/

@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'home/', include('homepage.urls')),
     url(r'user/',include('userinfos.urls')),
     url(r'^tinymce/',include('tinymce.urls')), ## 富文本编译器
+    # url(r'^search/',include('haystack.urls')) ## 全文索引
 ]

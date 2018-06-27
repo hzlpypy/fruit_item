@@ -1,3 +1,4 @@
+import requests
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from register.forms import User, LoginForm
@@ -37,7 +38,7 @@ def register(request):
                         encrypt_pwd.update(aginpwd.encode('utf8'))
                         new_pwd = encrypt_pwd.hexdigest()
                         UserInfo.objects.create(uname=name, upwd=new_pwd, uemail=email)
-                        request.session.add(name)
+                        # request.session.add(name)
                         return HttpResponseRedirect('/register/login')
                     else:
                         return render(request, 'register/register.html', {'form': f, 'error_verify_judge': '验证码错误'})
@@ -94,7 +95,14 @@ def jizhu_login(request):
 
 ######登出#########
 def logout(request):
-    del request.session['name']  #### 删除会话
-    del request.session['user_id']
+    # del request.session['name']  #### 删除会话
+    # del request.session['user_id']
+    # s = requests.session()
+    # s.get('http://127.0.0.1:8000/home/')
+    # s.cookies.clear()
+    # request.session.clear()
+    request.session.flush()
+    red = redirect('/home/')
+    red.delete_cookie('goods_ids')  ## 退出时删除相关cookie
     # request.session.set_expiry(0) ###在浏览器关闭时过期
-    return redirect('/home/')
+    return red

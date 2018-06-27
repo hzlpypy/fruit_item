@@ -14,59 +14,6 @@ from .models import Typeinfo, Goodsinfo, Change, Smallinfo
 li_shopcar = {}  # 判断前端头部界面是否为购物车,或者支付界面,或者用户中心界面
 
 
-#########主页面###########
-def index(request):
-    li = []
-    title = Typeinfo.objects.filter()
-    for title_ob in title:
-        title_dict = model_to_dict(title_ob)
-        li.append(title_dict)
-    s = request.COOKIES
-    try:
-        name = request.session['name']
-        if name:
-            return render(request, 'home_page/index.html', {'title_info': li, 'name': name, 'title': '-首页'})
-    except:
-        return render(request, 'home_page/index.html', {'title_info': li, 'title': '-首页'})
-
-
-##########搜索################
-def search(request,id,pindex,sort):
-    if request.method == 'GET':
-        id_active = ''
-        pri_active = ''
-        sal_active = ''
-        info = []
-        dic_search = {'a': 1}
-        fruit_info = request.GET.get('info')
-        # 获取关于搜索关键字的所有数据
-        if sort == '1': # 按默认排序
-            searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('id')
-            ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('id')
-            id_active = 'id'
-        elif sort == '2': # 价格排序
-            searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('gprice')
-            ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('gprice')
-            pri_active = 'gprice'
-        else:
-            searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('gsalesvolume')
-            ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('gsalesvolume')
-            sal_active = 'gsalesvolume'
-        page = request.GET.get('page', 1)
-        if searchinfo:
-            paginator = Paginator(searchinfo, 2)
-            fun(page, paginator)
-            for goodsinfo in searchinfo:
-                info.append(model_to_dict(goodsinfo))
-        elif ifygoods:
-            paginator = Paginator(ifygoods, 2)
-            fun(page, paginator)
-            for goodsinfo in ifygoods:
-                info.append(model_to_dict(goodsinfo))
-        newfruit = news()
-    return render(request, 'func/fruit_list.html', locals())
-
-
 ######### 传递json数据给主页面进行添加水果操作#################
 def add_goods(request):
     if request.method == 'GET':
@@ -82,6 +29,22 @@ def add_goods(request):
                 li.append(title.to_dict())
             result.update(statu=200, msg='success', data=li)
             return HttpResponse(json.dumps(result), content_type='Application/json')
+
+
+#########主页面###########
+def index(request):
+    li = []
+    title = Typeinfo.objects.filter()
+    for title_ob in title:
+        title_dict = model_to_dict(title_ob)
+        li.append(title_dict)
+    s = request.COOKIES
+    try:
+        name = request.session['name']
+        if name:
+            return render(request, 'home_page/index.html', {'title_info': li, 'title': '-首页'})
+    except:
+        return render(request, 'home_page/index.html', {'title_info': li, 'title': '-首页'})
 
 
 ########  商品列表 #####################
@@ -122,32 +85,44 @@ def fruit_list(request, id, pindex, sort):  # id表示商品类别,例如0代表
                    'paginator': paginator, 'fruit_info': fruit_info,
                    's': s, 'newfruit': news(), 'url': '/home/list{}_1_{}'.format(id, sort),
                    'id_active': id_active, 'pri_active': pri_active,
-                   'sal_active': sal_active, 'id': id, 'dic_classify': dic_classify,'list':list}
+                   'sal_active': sal_active, 'id': id, 'dic_classify': dic_classify, 'list': list}
         return render(request, 'func/fruit_list.html', context=context)
 
 
 ####购买详情界面######
 def car(request):
     li = []
-    order_li = []
     if request.method == 'GET':
         dic_search = {'a': 1}
         id = request.GET.get('id')
-        goods = Goodsinfo.objects.filter(id=id)  ###通过id获取下面类别
-        fruit_info = Goodsinfo.objects.all().order_by('id') ### 对id进行排序,下面取最后两个
-        if goods:
-            #####  获取类别  #####
-            new_fruit = model_to_dict(goods.first())
-            ss = new_fruit.get('gid')
-            fruit_type = Typeinfo.objects.get(id=ss)
-            types = model_to_dict(fruit_type).get('title')
-            ######  获取结束 #####
-            for two_new_fruit in fruit_info:
-                li.append(model_to_dict(two_new_fruit))
-            order_li = li[-2:]
-            fruits = goods[0]
-            return render(request, 'func/car.html', {'form': fruits,'order_li': order_li,'dic_search':dic_search,'types':types,'id':ss})
-
+        goods = Goodsinfo.objects.get(id=id)  ###通过id获取下面类别
+        fruit_info = Goodsinfo.objects.all().order_by('id')  ### 对id进行排序,下面取最后两个
+        #####  获取类别  #####
+        new_fruit = model_to_dict(goods)
+        ss = new_fruit.get('gid')
+        fruit_type = Typeinfo.objects.get(id=ss)
+        types = model_to_dict(fruit_type).get('title')
+        ######  获取结束 #####
+        for two_new_fruit in fruit_info:
+            li.append(model_to_dict(two_new_fruit))
+        order_li = li[-2:]
+        red = render(request, 'func/car.html',
+                     {'form': goods, 'order_li': order_li, 'dic_search': dic_search, 'types': types, 'id': ss})
+        ##最近浏览判断##
+        goods_ids = request.COOKIES.get('goods_ids', '') # 获取cookie中的goods_ids
+        goods_id = '%d' % goods.id
+        if goods_ids:
+            goods_ids1 = goods_ids.split(',') # 将goods_ids通过逗号切割,返回一个列表
+            if goods_ids1.count(goods_id) >= 1:  #  判断goods_id是否存在与goods_ids1中,也就是判断是点击的浏览记录是否重复
+                goods_ids1.remove(goods_id)  #  重复就删除
+            goods_ids1.insert(0, goods_id)  # 将最新的记录插在索引为0位置,即达到最新展示的目的
+            if len(goods_ids1) >= 6: #  判断是记录列表是否大于5,控制记录显示的条数
+                del goods_ids1[5]  #  大于等于6,就删除最后一条
+            goods_ids = ','.join(goods_ids1)  ### 用逗号拼接成用逗号相连的字符串
+        else:
+            goods_ids = goods_id
+        red.set_cookie('goods_ids', goods_ids)
+        return red
     return HttpResponse('呵呵')
 
 
@@ -183,9 +158,7 @@ def add_cars(request):
             # url = request.COOKIES.get('url','/')
             # return HttpResponseRedirect(url)
     else:
-        return JsonResponse({'res':0})
-
-
+        return JsonResponse({'res': 0})
 
 
 #####购物车系统##########
@@ -208,7 +181,7 @@ def shopcar(request):
                 if fruits['is_delete'] == '1':
                     shop_dict = fruits
                     li.append(shop_dict)
-        return render(request, 'func/shopcar.html', {'shopcar': li_shopcar, 'form': li,'i': i})
+        return render(request, 'func/shopcar.html', {'shopcar': li_shopcar, 'form': li, 'i': i})
 
 
 ######前端点击修改商数量时,购物车数据库数据跟着修改#############
@@ -252,3 +225,112 @@ def pay(request):
         return render(request, 'func/pay_money.html',
                       {'shopcar': li_shopcar, 'form': li, 'i': i, 'totalprice': str(li_price)[0:6],
                        'reality_price': str(reality_price)[0:6]})
+
+
+from haystack.views import SearchView
+
+##### 搜索HTML文件 ####
+#    <div class="navbar_con">
+#         <div class="navbar clearfix">
+#             <div class="subnav_con fl">
+#                 <h1>全部商品分类</h1>
+#                 <span></span>
+#                 <ul class="subnav">
+#                     <li><a href="#" class="fruit">新鲜水果</a></li>
+#                     <li><a href="#" class="seafood">海鲜水产</a></li>
+#                     <li><a href="#" class="meet">猪牛羊肉</a></li>
+#                     <li><a href="#" class="egg">禽类蛋品</a></li>
+#                     <li><a href="#" class="vegetables">新鲜蔬菜</a></li>
+#                     <li><a href="#" class="ice">速冻食品</a></li>
+#                 </ul>
+#             </div>
+#             <ul class="navlist fl">
+#                 <li><a href="{% url 'index' %}">首页</a></li>
+#                 <li class="interval">|</li>
+#                 <li><a href="">手机生鲜</a></li>
+#                 <li class="interval">|</li>
+#                 <li><a href="">抽奖</a></li>
+#             </ul>
+#         </div>
+#     </div>
+#
+# {% if searchinfo.has_previous %}
+#                     <!-- 当前页的上一页按钮正常使用-->
+#                     <li class="previous"><a
+#                             href="/search/?info={{ info }}&&page={{ searchinfo.previous_page_number }}">上一页</a>
+#                     </li>
+#                 {% elif ifygoods.has_previous %}
+#                     <li class="previous"><a
+#                             href="/search/?info={{ info }}&&page={{ ifygoods.previous_page_number }}">上一页</a>
+#                     </li>
+#                 {% else %}
+#                     <!-- 当前页的不存在上一页时,上一页的按钮不可用-->
+#                     <li class="previous disabled"><a href="#">上一页</a></li>
+#                 {% endif %}
+#                 <!-- 上一页按钮结束 -->
+#                 <!-- 页码开始 -->
+#                 {% for num in paginator.page_range %}
+#                     {% if num ==  currentPage %}
+#                         <li class="item active"><a href="search/?info={{ info }}&&page={{ num }}">{{ num }}</a>
+#                         </li>
+#                     {% else %}
+#                         <li class="item"><a href="search/?info={{ info }}&&page={{ num }}">{{ num }}</a></li>
+#                     {% endif %}
+#                 {% endfor %}
+#                 <!-- 页码结束 -->
+#                 <!--下一页按钮开始 -->
+#                 {% if searchinfo.has_next %}
+#                     <li class="next"><a
+#                             href="search/?info={{ info }}&&page={{ searchinfo.next_page_number }}">下一页</a>
+#                     </li>
+#                 {% elif ifygoods.has_next %}
+#                     <li class="next"><a
+#                             href="search/?info={{ info }}&&page={{ ifygoods.next_page_number }}">下一页</a>
+#                     </li>
+#                 {% else %}
+#                     <li class="next disabled"><a href="#">下一页</a></li>
+#                 {% endif %}
+
+
+class MySearchView(SearchView):
+    def extra_context(self):
+        context = super(MySearchView, self).extra_context()
+        context['title'] = '-搜索'
+        context['dic_search'] = 1
+        context['newfruit'] = news()
+        return context
+##########搜索################
+# def search(request, id, pindex, sort):
+#     if request.method == 'GET':
+#         id_active = ''
+#         pri_active = ''
+#         sal_active = ''
+#         info = []
+#         dic_search = {'a': 1}
+#         fruit_info = request.GET.get('info')
+#         # 获取关于搜索关键字的所有数据
+#         if sort == '1':  # 按默认排序
+#             searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('id')
+#             ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('id')
+#             id_active = 'id'
+#         elif sort == '2':  # 价格排序
+#             searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('gprice')
+#             ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('gprice')
+#             pri_active = 'gprice'
+#         else:
+#             searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('gsalesvolume')
+#             ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('gsalesvolume')
+#             sal_active = 'gsalesvolume'
+#         page = request.GET.get('page', 1)
+#         if searchinfo:
+#             paginator = Paginator(searchinfo, 2)
+#             fun(page, paginator)
+#             for goodsinfo in searchinfo:
+#                 info.append(model_to_dict(goodsinfo))
+#         elif ifygoods:
+#             paginator = Paginator(ifygoods, 2)
+#             fun(page, paginator)
+#             for goodsinfo in ifygoods:
+#                 info.append(model_to_dict(goodsinfo))
+#         newfruit = news()
+#     return render(request, 'func/fruit_list.html', locals())
