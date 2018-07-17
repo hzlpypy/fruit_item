@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'homepage',
     'userinfos',### 富文本编译器
     'tinymce',
-    'haystack'
+    'haystack',
 ]
 
 MIDDLEWARE = [
@@ -157,4 +157,13 @@ HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 #HAYSTACK_DEFAUT_OPERATOR = 'OR'
 HAYSTACK_SIGNAL_RESULTS_PER_PAGE = 18 # 配置一页显示多少条数据
 
-
+##### redis 配置 ######
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

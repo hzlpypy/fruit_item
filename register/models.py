@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 from django.utils import timezone
 
-from homepage.models import Change
+from homepage.models import Change,Goodsinfo
 
 
 class UserInfo(models.Model):
@@ -19,18 +19,17 @@ class UserInfo(models.Model):
 
 
 class Joincars(models.Model):
-    uname = models.CharField(max_length=32,verbose_name='用户名',default='1')
-    goodsinfo = models.CharField(max_length=100, verbose_name='商品名称')
-    goodsnum = models.CharField(max_length=32, verbose_name='商品个数')
-    goodsprice = models.CharField(max_length=32,verbose_name='商品单价')
-    gtotalprice = models.CharField(max_length=32,verbose_name='商品总价')
-    gimg = models.CharField(max_length=255,default='1',verbose_name='商品图片')
+    uname = models.ForeignKey(UserInfo)
+    goodsinfo = models.CharField(max_length=100, verbose_name='商品名称',null=True)
+    # goods = models.ForeignKey(Goodsinfo,null=True)
+    goodsnum = models.CharField(max_length=32, verbose_name='商品个数',null=True)
+    goodsprice = models.CharField(max_length=32,verbose_name='商品单价',null=True)
+    gtotalprice = models.CharField(max_length=32,verbose_name='商品总价',default='')
+    gimg = models.CharField(max_length=255,default='1',verbose_name='商品图片',null=True)
     gcount = models.CharField(max_length=8,verbose_name='商品编码')
     createtime = models.DateTimeField(default=timezone.now)
-    is_delete = models.CharField(max_length=32,default='1')
+    is_delete = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.goodsinfo
 
     class Meta:
         db_table = 'joincars'

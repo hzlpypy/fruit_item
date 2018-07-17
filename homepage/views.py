@@ -108,9 +108,11 @@ def car(request):
         order_li = li[-2:]
         red = render(request, 'func/car.html',
                      {'form': goods, 'order_li': order_li, 'dic_search': dic_search, 'types': types, 'id': ss})
-        ##最近浏览判断##
+
+        #############最近浏览判断##############
+
         goods_ids = request.COOKIES.get('goods_ids', '') # 获取cookie中的goods_ids
-        goods_id = '%d' % goods.id
+        goods_id = str(goods.id)
         if goods_ids:
             goods_ids1 = goods_ids.split(',') # 将goods_ids通过逗号切割,返回一个列表
             if goods_ids1.count(goods_id) >= 1:  #  判断goods_id是否存在与goods_ids1中,也就是判断是点击的浏览记录是否重复
@@ -122,11 +124,13 @@ def car(request):
         else:
             goods_ids = goods_id
         red.set_cookie('goods_ids', goods_ids)
+        request.session['urls'] = request.get_full_path()
         return red
     return HttpResponse('呵呵')
 
 
 #####  添加到购物车########
+# @func.login
 def add_cars(request):
     if 'name' in request.session:
         count = request.POST.get('count')  # 个数
@@ -134,7 +138,7 @@ def add_cars(request):
         totalprice = request.POST.get('totalprice')  # 总价
         title = request.POST.get('title')  # 商品名称
         img = request.POST.get('img')  # 图片
-        name = request.session['name']
+        id = request.session['user_id']
         if Joincars.objects.filter(goodsinfo=title):
             judge_num = unitprice.split('.')
             if len(judge_num) > 0:  # 判断是否为浮点型和整形  大于0为浮点型 否则反之
@@ -148,16 +152,19 @@ def add_cars(request):
                                                                         int(count) * int(unitprice)))
             return JsonResponse({'res': 1})
         else:
-            Joincars.objects.create(uname=name,
+            Joincars.objects.create(uname_id=id,
                                     goodsinfo=title,
                                     goodsnum=count,
                                     goodsprice=unitprice,
                                     gtotalprice=totalprice,
                                     gimg=img)
             return JsonResponse({'res': 1})
-            # url = request.COOKIES.get('url','/')
-            # return HttpResponseRedirect(url)
     else:
+        red = JsonResponse({'res': 0})
+        # red.set_cookie('url', request.get_full_path())
+        # a = request.path
+        # b = request.get_full_path()
+        # url = request.COOKIES.get('url', '')
         return JsonResponse({'res': 0})
 
 
@@ -167,21 +174,20 @@ def shopcar(request):
     li = []
     if request.method == 'GET':
         dell_id = request.GET.get('id')
-        name = request.session['name']
         if dell_id:
-            Joincars.objects.filter(uname=name, id=dell_id).delete()
-        info = Joincars.objects.filter(uname=name)
+            Joincars.objects.filter(uname_id=request.session.get('user_id'), id=dell_id).delete()
+        user = UserInfo.objects.get(id=request.session.get('user_id'))
+        info = user.joincars_set.all()
+        # info = Joincars.objects.filter(uname_id=request.session.get('user_id'))
         li_shopcar.update(a='购物车')
         i = 0
         if info:
             for shopcarinfo in info:
                 i += 1
-                fruits = model_to_dict(shopcarinfo)
                 ### 在这进行删除判断,通过isdelete ###
-                if fruits['is_delete'] == '1':
-                    shop_dict = fruits
-                    li.append(shop_dict)
-        return render(request, 'func/shopcar.html', {'shopcar': li_shopcar, 'form': li, 'i': i})
+                if shopcarinfo.is_delete == 1:
+                    pass
+        return render(request, 'func/shopcar.html', {'shopcar': li_shopcar, 'form': info, 'i': i})
 
 
 ######前端点击修改商数量时,购物车数据库数据跟着修改#############
@@ -212,12 +218,12 @@ def pay(request):
         li = []
         li_price = 0
         i = 0
-        name = request.session['name']
-        user_shop = Joincars.objects.filter(uname=name)
+        user_id = request.session['user_id']
+        user_shop = Joincars.objects.filter(uname_id=user_id)
         for info in user_shop:
             i += 1
             dic = model_to_dict(info).get('goodsinfo')
-            Joincars.objects.filter(uname=name, goodsinfo=dic).update(gcount=i)
+            Joincars.objects.filter(uname_id=user_id, goodsinfo=dic).update(gcount=i)
             li.append(model_to_dict(info))
             dic_money = float(model_to_dict(info).get('gtotalprice'))
             li_price += dic_money

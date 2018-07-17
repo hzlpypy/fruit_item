@@ -100,17 +100,6 @@ def person_info(request):
                 recently = Goodsinfo.objects.get(id=lately_id)
                 fruit_list.append(model_to_dict(recently))
     elif recod and fruit_id:  ###如果最开始有数据,并且cookie中也有数据
-        # if recod.first().info_id in fruit_id:  # 判断之前的浏览记录是否与cookie的记录存在重复
-        #     old_jilu_id = fruit_id  #  如果有, 则让 cookie记录的fruit_id 直接赋予 old_jilu_id
-        # else:  # 如果第一个值不在fruit_id中,则拼接字符串
-        #     old_jilu_id = fruit_id + ',' + recod.first().info_id
-        # if True:
-        #     lack_list = recod.first().info_id.split(',')
-        #     for a in fruit_id:
-        #         if a:
-        #             if lack_list.count(a) >= 1:
-        #                 lack_list.remove(fruit_id)
-        #             lack_list.insert(0,fruit_id)
         list = fruit_id.split(',')  # 通过逗号,分割字符串,返回一个列表
         lack_list = recod.first().info_id.split(',')
         if len(list) == len(lack_list):

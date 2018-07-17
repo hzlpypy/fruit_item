@@ -63,7 +63,7 @@ class Goodsinfo(Change):
     ginfo = models.CharField(max_length=255, verbose_name='商品介绍', default='1')
     gdetailed = HTMLField(default='1') ### 商品介绍
     gcommon = HTMLField(default='1') ### 商品评论
-    gsalesvolume = models.IntegerField(max_length=255,verbose_name='销量',default='1')
+    gsalesvolume = models.IntegerField(verbose_name='销量',default='1')
     gevaluate = models.CharField(max_length=255, verbose_name='商品评论', default='1')
     addtime = models.DateField(default=timezone.now, verbose_name='创建时间')
     a_updatetime = models.DateTimeField(default=timezone.now, verbose_name='更新时间')

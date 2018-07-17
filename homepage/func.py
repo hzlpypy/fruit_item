@@ -29,6 +29,7 @@ def news():
     two_new_fruit = li_news[-2:]
     return two_new_fruit
 
+
 def login(func):   ###封装验证登录的装饰器***************重点
     def login_fun(request,*args,**kwargs):
         if request.session.has_key('user_id'):
@@ -36,8 +37,10 @@ def login(func):   ###封装验证登录的装饰器***************重点
         else:
             red = HttpResponseRedirect('/register/jizhu')
             red.set_cookie('url',request.get_full_path())
+            url = request.COOKIES.get('url','')
             return red
     return login_fun
+
 
 def list_and_search(sort,fruit_info):
     if sort == '1':  # 按默认排序

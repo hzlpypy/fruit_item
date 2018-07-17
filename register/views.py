@@ -1,6 +1,13 @@
+import uuid
+
 import requests
+# from django.core.cache import cache
+from django.core.cache import cache
+
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+# from django_redis import cache
+
 from register.forms import User, LoginForm
 from register.models import UserInfo
 from hashlib import sha1
@@ -64,13 +71,20 @@ def login(request):
             name = f.cleaned_data['name']
             users = UserInfo.objects.filter(uname=name, upwd=fun_pwd(f.cleaned_data['pwd']))
             if users:
-                url = request.COOKIES.get('url','/home')
+                if request.session.get('urls', ''):
+                    url = request.session.get('urls')
+                else:
+                    url = request.COOKIES.get('url', '/home')
                 uname = f.cleaned_data['name']
                 red = HttpResponseRedirect(url)
                 if jizhu != 0:
                     red.set_cookie('uname', uname)  # 通过COOKIE 方式保存信息
                 else:
                     red.set_cookie('uname', '', max_age=-1)
+                token = str(uuid.uuid4())
+                user_id= str(users[0].id)
+                cache.set('user'+ user_id,token,timeout=60*60*2)
+                id = cache.get('user'+user_id,None)
                 request.session['name'] = uname
                 request.session['user_id'] = users[0].id
                 return red
