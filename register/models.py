@@ -12,7 +12,9 @@ class UserInfo(models.Model):
     uemail = models.EmailField(max_length=32,verbose_name='邮箱')
     create_data = models.DateTimeField(u'时间', auto_now_add=True, editable=True)
     update_time = models.DateTimeField(default=timezone.now)
+    email_judge = models.IntegerField(default=0)
     isDelete = models.CharField(max_length=32, default='1')
+
 
     class Meta:
         db_table = 'userinfo'

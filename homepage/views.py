@@ -1,4 +1,10 @@
 import json
+from time import sleep
+
+from django.core.cache import cache
+from django.template import loader
+from django.views.decorators.cache import cache_page
+
 from homepage.func import fun, news
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -33,23 +39,31 @@ def add_goods(request):
 
 #########主页面###########
 def index(request):
+
     li = []
     title = Typeinfo.objects.filter()
+    ip = request.META.get('REMOTE_ADDR')
+    result = cache.get(ip + 'index', '')
+    if result:
+        return HttpResponse(result)
     for title_ob in title:
         title_dict = model_to_dict(title_ob)
         li.append(title_dict)
-    s = request.COOKIES
-    try:
-        name = request.session['name']
-        if name:
-            return render(request, 'home_page/index.html', {'title_info': li, 'title': '-首页'})
-    except:
-        return render(request, 'home_page/index.html', {'title_info': li, 'title': '-首页'})
+    s = request.session.get('name')
+    sleep(0.5)
+    context = {'title_info': li, 'title': '-首页'}
+    temp = loader.get_template('home_page/index.html')
+    result = temp.render(context=context)
+    cache.set(ip + 'index', result)
+    red = HttpResponse(result)
+    return red
 
 
 ########  商品列表 #####################
+@cache_page(30)
 def fruit_list(request, id, pindex, sort):  # id表示商品类别,例如0代表全部,1代表新鲜水果..sort是按什么类别来排序
     if request.method == 'GET':
+        # sleep(2)
         list = '5'
         id_active = ''
         pri_active = ''
@@ -111,15 +125,15 @@ def car(request):
 
         #############最近浏览判断##############
 
-        goods_ids = request.COOKIES.get('goods_ids', '') # 获取cookie中的goods_ids
+        goods_ids = request.COOKIES.get('goods_ids', '')  # 获取cookie中的goods_ids
         goods_id = str(goods.id)
         if goods_ids:
-            goods_ids1 = goods_ids.split(',') # 将goods_ids通过逗号切割,返回一个列表
-            if goods_ids1.count(goods_id) >= 1:  #  判断goods_id是否存在与goods_ids1中,也就是判断是点击的浏览记录是否重复
-                goods_ids1.remove(goods_id)  #  重复就删除
+            goods_ids1 = goods_ids.split(',')  # 将goods_ids通过逗号切割,返回一个列表
+            if goods_ids1.count(goods_id) >= 1:  # 判断goods_id是否存在与goods_ids1中,也就是判断是点击的浏览记录是否重复
+                goods_ids1.remove(goods_id)  # 重复就删除
             goods_ids1.insert(0, goods_id)  # 将最新的记录插在索引为0位置,即达到最新展示的目的
-            if len(goods_ids1) >= 6: #  判断是记录列表是否大于5,控制记录显示的条数
-                del goods_ids1[5]  #  大于等于6,就删除最后一条
+            if len(goods_ids1) >= 6:  # 判断是记录列表是否大于5,控制记录显示的条数
+                del goods_ids1[5]  # 大于等于6,就删除最后一条
             goods_ids = ','.join(goods_ids1)  ### 用逗号拼接成用逗号相连的字符串
         else:
             goods_ids = goods_id
@@ -130,7 +144,6 @@ def car(request):
 
 
 #####  添加到购物车########
-# @func.login
 def add_cars(request):
     if 'name' in request.session:
         count = request.POST.get('count')  # 个数
@@ -235,6 +248,7 @@ def pay(request):
 
 from haystack.views import SearchView
 
+
 ##### 搜索HTML文件 ####
 #    <div class="navbar_con">
 #         <div class="navbar clearfix">
@@ -305,38 +319,3 @@ class MySearchView(SearchView):
         context['dic_search'] = 1
         context['newfruit'] = news()
         return context
-##########搜索################
-# def search(request, id, pindex, sort):
-#     if request.method == 'GET':
-#         id_active = ''
-#         pri_active = ''
-#         sal_active = ''
-#         info = []
-#         dic_search = {'a': 1}
-#         fruit_info = request.GET.get('info')
-#         # 获取关于搜索关键字的所有数据
-#         if sort == '1':  # 按默认排序
-#             searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('id')
-#             ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('id')
-#             id_active = 'id'
-#         elif sort == '2':  # 价格排序
-#             searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('gprice')
-#             ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('gprice')
-#             pri_active = 'gprice'
-#         else:
-#             searchinfo = Goodsinfo.objects.filter(gtitle__contains=fruit_info).order_by('gsalesvolume')
-#             ifygoods = Goodsinfo.objects.filter(gtype__contains=fruit_info).order_by('gsalesvolume')
-#             sal_active = 'gsalesvolume'
-#         page = request.GET.get('page', 1)
-#         if searchinfo:
-#             paginator = Paginator(searchinfo, 2)
-#             fun(page, paginator)
-#             for goodsinfo in searchinfo:
-#                 info.append(model_to_dict(goodsinfo))
-#         elif ifygoods:
-#             paginator = Paginator(ifygoods, 2)
-#             fun(page, paginator)
-#             for goodsinfo in ifygoods:
-#                 info.append(model_to_dict(goodsinfo))
-#         newfruit = news()
-#     return render(request, 'func/fruit_list.html', locals())

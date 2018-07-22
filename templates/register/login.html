@@ -1,4 +1,17 @@
 {% extends 'base.html' %}
+{% block js %}
+    <script>
+        $(function () {
+            $('.input_submit').click(function () {
+                    alert(555);
+                    let $pwd = $("#id_pwd");
+                    let password = $pwd.val();
+                    $pwd.val(md5(password));
+
+            })
+        })
+    </script>
+{% endblock %}
 {% block content %}
     <div class="login_top clearfix">
         <a href="{% url 'index' %}" class="login_logo"><img src="/static/images/logo02.png"></a>
@@ -13,7 +26,7 @@
                     <a href="{% url 'reg' %}">立即注册</a>
                 </div>
                 <div class="form_input">
-                    <form method="post" action="{% url 'login' %}">
+                    <form method="post" action="{% url 'login' %}" onsubmit="return pwd()">
                         {{ form.name }}
 
                         {% if error.name.0 %}
@@ -32,7 +45,6 @@
                             <a href="#">忘记密码</a>
                         </div>
                         <input type="submit" name="" value="登录" class="input_submit">
-
 
                     </form>
 

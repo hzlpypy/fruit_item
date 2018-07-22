@@ -10,24 +10,6 @@
     <script type="text/javascript" src="/static/js/slide.js"></script>
     <script type="text/javascript" src="/static/js/register.js"></script>
     <script type="text/javascript" src="/static/js/jquery.cookie.js"></script>
-    <script>
-        /*
-        $(function () {
-            $('.input_btn').click(function () {
-                let SEARCH_URL = 'http://127.0.0.1:8000/home/search';
-                let search_info = $('.input_text').val();
-                if (search_info) {
-                    location.href = SEARCH_URL + '1_1_1' + '?info=' + search_info
-                } else {
-                    alert('搜索不能为空');
-                    $('.show_error').html('搜索不能为空')
-                }
-
-
-            })
-        })
-        */
-    </script>
     {% block js %}
     {% endblock %}
     {% block css %}
@@ -66,9 +48,6 @@
             <div class="header">
                 <div class="welcome fl">欢迎来到天天生鲜!</div>
                 <div class="fr">
-                    <div class="login_info fl">
-                        欢迎您：<em>张 山</em>
-                    </div>
                     {% if request.session.name|default:'' != '' %}
                         <div class="login_btn fl">
                             <span style="color: red">欢迎您:<a>{{ request.session.name }}</a></span>

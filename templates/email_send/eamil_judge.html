@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>邮箱激活</title>
+</head>
+<body>
+    {% if id %}
+        <a href="{% url 'login' %}">激活成功,点击跳转登录页面</a>
+    {% else %}
+        <a href="{% url 'reg' %}">邮件失效,请重新注册</a>
+    {% endif %}
+</body>
+</html>

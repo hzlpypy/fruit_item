@@ -7,7 +7,9 @@ from django.core.cache import cache
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 # from django_redis import cache
+from django.views import View
 
+from homepage.func import email_send
 from register.forms import User, LoginForm
 from register.models import UserInfo
 from hashlib import sha1
@@ -44,8 +46,11 @@ def register(request):
                         encrypt_pwd = sha1()
                         encrypt_pwd.update(aginpwd.encode('utf8'))
                         new_pwd = encrypt_pwd.hexdigest()
-                        UserInfo.objects.create(uname=name, upwd=new_pwd, uemail=email)
-                        # request.session.add(name)
+                        user = UserInfo.objects.create(uname=name, upwd=new_pwd, uemail=email)
+                        email_token = str(uuid.uuid4())
+                        cache.set(email_token,user.id ,timeout=60 * 60 * 24 * 1)
+                        URL = request.META.get('REMOTE_ADDR') + '/register/activate?token=' + email_token
+                        email_send(URL,name ,email)
                         return HttpResponseRedirect('/register/login')
                     else:
                         return render(request, 'register/register.html', {'form': f, 'error_verify_judge': '验证码错误'})
@@ -54,7 +59,6 @@ def register(request):
             else:
                 return render(request, 'register/register.html', {'form': f, 'error_pwd': '两次密码不一致'})
         else:
-            a = f.errors
             return render(request, 'register/register.html', {"error": f.errors, "form": f})
     else:
         f = User()
@@ -71,23 +75,26 @@ def login(request):
             name = f.cleaned_data['name']
             users = UserInfo.objects.filter(uname=name, upwd=fun_pwd(f.cleaned_data['pwd']))
             if users:
-                if request.session.get('urls', ''):
-                    url = request.session.get('urls')
+                if users[0].email_judge:
+                    if request.session.get('urls', ''):
+                        url = request.session.get('urls')
+                    else:
+                        url = request.COOKIES.get('url', '/home')
+                    uname = f.cleaned_data['name']
+                    red = HttpResponseRedirect(url)
+                    if jizhu != 0:
+                        red.set_cookie('uname', uname)  # 通过COOKIE 方式保存信息
+                    else:
+                        red.set_cookie('uname', '', max_age=-1)
+                    token = str(uuid.uuid4())
+                    user_id = str(users[0].id)
+                    cache.set('user' + user_id, token, timeout=60 * 60 * 2)
+                    id = cache.get('user' + user_id, None)
+                    request.session['name'] = uname
+                    request.session['user_id'] = users[0].id
+                    return red
                 else:
-                    url = request.COOKIES.get('url', '/home')
-                uname = f.cleaned_data['name']
-                red = HttpResponseRedirect(url)
-                if jizhu != 0:
-                    red.set_cookie('uname', uname)  # 通过COOKIE 方式保存信息
-                else:
-                    red.set_cookie('uname', '', max_age=-1)
-                token = str(uuid.uuid4())
-                user_id= str(users[0].id)
-                cache.set('user'+ user_id,token,timeout=60*60*2)
-                id = cache.get('user'+user_id,None)
-                request.session['name'] = uname
-                request.session['user_id'] = users[0].id
-                return red
+                    return render(request, 'register/login.html', {'error': '账户未激活', 'form': f, 'li_login': li_login})
             else:
                 return render(request, 'register/login.html', {'error': '密码错误', 'form': f, 'li_login': li_login})
         else:
@@ -120,3 +127,11 @@ def logout(request):
     red.delete_cookie('goods_ids')  ## 退出时删除相关cookie
     # request.session.set_expiry(0) ###在浏览器关闭时过期
     return red
+
+
+class UserView(View):
+    def get(self):
+        pass
+
+    def post(self):
+        pass
